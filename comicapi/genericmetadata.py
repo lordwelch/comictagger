@@ -59,56 +59,57 @@ class GenericMetadata:
     def __init__(self):
 
         self.isEmpty = True
-        self.tagOrigin = None
+        self.tagOrigin = ""
 
-        self.series = None
-        self.issue = None
-        self.title = None
-        self.publisher = None
-        self.month = None
-        self.year = None
-        self.day = None
-        self.issueCount = None
-        self.volume = None
-        self.genre = None
-        self.language = None  # 2 letter iso code
-        self.comments = None  # use same way as Summary in CIX
+        self.series = ""
+        self.issue = ""
+        self.title = ""
+        self.publisher = ""
+        self.seriesYear = ""
+        self.month = ""
+        self.year = ""
+        self.day = ""
+        self.issueCount = ""
+        self.volume = ""
+        self.genre = ""
+        self.language = ""  # 2 letter iso code
+        self.comments = ""  # use same way as Summary in CIX
 
-        self.volumeCount = None
-        self.criticalRating = None
-        self.country = None
+        self.volumeCount = ""
+        self.criticalRating = ""
+        self.country = ""
 
-        self.alternateSeries = None
-        self.alternateNumber = None
-        self.alternateCount = None
-        self.imprint = None
-        self.notes = None
-        self.webLink = None
-        self.format = None
-        self.manga = None
-        self.blackAndWhite = None
-        self.pageCount = None
-        self.maturityRating = None
+        self.alternateSeries = ""
+        self.alternateNumber = ""
+        self.alternateCount = ""
+        self.imprint = ""
+        self.notes = ""
+        self.webLink = ""
+        self.format = ""
+        self.manga = ""
+        self.blackAndWhite = ""
+        self.pageCount = ""
+        self.maturityRating = ""
 
-        self.storyArc = None
-        self.seriesGroup = None
-        self.scanInfo = None
+        self.storyArc = ""
+        self.seriesGroup = ""
+        self.scanInfo = ""
 
-        self.characters = None
-        self.teams = None
-        self.locations = None
+        self.characters = ""
+        self.teams = ""
+        self.locations = ""
 
         self.credits = list()
         self.tags = list()
         self.pages = list()
 
         # Some CoMet-only items
-        self.price = None
-        self.isVersionOf = None
-        self.rights = None
-        self.identifier = None
-        self.lastMark = None
-        self.coverImage = None
+        self.price = ""
+        self.isVersionOf = ""
+        self.rights = ""
+        self.identifier = ""
+        self.lastMark = ""
+        self.coverImage = ""
 
     def overlay(self, new_md):
         """Overlay a metadata object on this one
@@ -118,9 +119,9 @@ class GenericMetadata:
         """
 
         def assign(cur, new):
-            if new is not None:
+            if new is not None and new is not "":
                 if isinstance(new, str) and len(new) == 0:
-                    setattr(self, cur, None)
+                    setattr(self, cur, "")
                 else:
                     setattr(self, cur, new)
 
@@ -132,9 +133,10 @@ class GenericMetadata:
         assign("issueCount", new_md.issueCount)
         assign("title", new_md.title)
         assign("publisher", new_md.publisher)
-        assign("day", new_md.day)
-        assign("month", new_md.month)
-        assign("year", new_md.year)
+        assign("day", new_md.day.lstrip("0"))
+        assign("month", new_md.month.lstrip("0"))
+        assign("seriesYear", new_md.seriesYear.lstrip("0"))
+        assign("year", new_md.year.lstrip("0"))
         assign("volume", new_md.volume)
         assign("volumeCount", new_md.volumeCount)
         assign("genre", new_md.genre)
@@ -251,7 +253,7 @@ class GenericMetadata:
             return "No metadata"
 
         def add_string(tag, val):
-            if val is not None and "{0}".format(val) != "":
+            if val is not None and val is not "":
                 vals.append((tag, val))
 
         def add_attr_string(tag):

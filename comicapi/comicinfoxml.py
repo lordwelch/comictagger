@@ -90,19 +90,24 @@ class ComicInfoXml:
 
         assign('Title', md.title)
         assign('Series', md.series)
+        if md.issue == 0 or md.issue == "0":
+            md.issue = "0"
+        else:
+            md.issue = md.issue.lstrip("0")
         assign('Number', md.issue)
-        assign('Count', md.issueCount)
+        assign('Count', md.issueCount.lstrip("0"))
         assign('Volume', md.volume)
         assign('AlternateSeries', md.alternateSeries)
-        assign('AlternateNumber', md.alternateNumber)
+        assign('AlternateNumber', md.alternateNumber.lstrip("0"))
         assign('StoryArc', md.storyArc)
         assign('SeriesGroup', md.seriesGroup)
-        assign('AlternateCount', md.alternateCount)
+        assign('AlternateCount', md.alternateCount.lstrip("0"))
         assign('Summary', md.comments)
         assign('Notes', md.notes)
-        assign('Year', md.year)
-        assign('Month', md.month)
-        assign('Day', md.day)
+        assign('Year', md.year.lstrip("0"))
+        assign('SeriesYear', md.seriesYear.lstrip("0"))
+        assign('Month', md.month.lstrip("0"))
+        assign('Day', md.day.lstrip("0"))
 
         # need to specially process the credits, since they are structured
         # differently than CIX
@@ -207,49 +212,53 @@ class ComicInfoXml:
             return None
 
         metadata = GenericMetadata()
-        md = metadata
 
         # Helper function
         def xlate(tag):
             node = root.find(tag)
             if node is not None:
-                return node.text
+                return (node.text or "")
             else:
-                return None
+                return ""
 
-        md.series = xlate('Series')
-        md.title = xlate('Title')
-        md.issue = xlate('Number')
-        md.issueCount = xlate('Count')
-        md.volume = xlate('Volume')
-        md.alternateSeries = xlate('AlternateSeries')
-        md.alternateNumber = xlate('AlternateNumber')
-        md.alternateCount = xlate('AlternateCount')
-        md.comments = xlate('Summary')
-        md.notes = xlate('Notes')
-        md.year = xlate('Year')
-        md.month = xlate('Month')
-        md.day = xlate('Day')
-        md.publisher = xlate('Publisher')
-        md.imprint = xlate('Imprint')
-        md.genre = xlate('Genre')
-        md.webLink = xlate('Web')
-        md.language = xlate('LanguageISO')
-        md.format = xlate('Format')
-        md.manga = xlate('Manga')
-        md.characters = xlate('Characters')
-        md.teams = xlate('Teams')
-        md.locations = xlate('Locations')
-        md.pageCount = xlate('PageCount')
-        md.scanInfo = xlate('ScanInformation')
-        md.storyArc = xlate('StoryArc')
-        md.seriesGroup = xlate('SeriesGroup')
-        md.maturityRating = xlate('AgeRating')
+        metadata.series = xlate('Series')
+        metadata.title = xlate('Title')
+        metadata.issue = xlate('Number')
+        if metadata.issue == 0 or metadata.issue == "0":
+            metadata.issue = "0"
+        else:
+            metadata.issue = metadata.issue.lstrip("0")
+        metadata.issueCount = xlate('Count').lstrip("0")
+        metadata.volume = xlate('Volume')
+        metadata.alternateSeries = xlate('AlternateSeries')
+        metadata.alternateNumber = xlate('AlternateNumber').lstrip("0")
+        metadata.alternateCount = xlate('AlternateCount').lstrip("0")
+        metadata.comments = xlate('Summary')
+        metadata.notes = xlate('Notes')
+        metadata.year = xlate('Year').lstrip("0")
+        metadata.seriesYear = xlate('SeriesYear').lstrip("0")
+        metadata.month = xlate('Month').lstrip("0")
+        metadata.day = xlate('Day').lstrip("0")
+        metadata.publisher = xlate('Publisher')
+        metadata.imprint = xlate('Imprint')
+        metadata.genre = xlate('Genre')
+        metadata.webLink = xlate('Web')
+        metadata.language = xlate('LanguageISO')
+        metadata.format = xlate('Format')
+        metadata.manga = xlate('Manga')
+        metadata.characters = xlate('Characters')
+        metadata.teams = xlate('Teams')
+        metadata.locations = xlate('Locations')
+        metadata.pageCount = xlate('PageCount')
+        metadata.scanInfo = xlate('ScanInformation')
+        metadata.storyArc = xlate('StoryArc')
+        metadata.seriesGroup = xlate('SeriesGroup')
+        metadata.maturityRating = xlate('AgeRating')
 
         tmp = xlate('BlackAndWhite')
-        md.blackAndWhite = False
+        metadata.blackAndWhite = False
         if tmp is not None and tmp.lower() in ["yes", "true", "1"]:
-            md.blackAndWhite = True
+            metadata.blackAndWhite = True
         # Now extract the credit info
         for n in root:
             if (n.tag == 'Writer' or
