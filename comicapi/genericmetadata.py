@@ -321,3 +321,15 @@ class GenericMetadata:
             outstr += fmt_str.format(i[0] + ":", i[1])
 
         return outstr
+
+    def fixPublisher(self):
+        Marvel = ['Aircel Comics', 'alibu Comics‎', 'Atlas Comics', 'Atlas', 'CrossGen comics‎', 'CrossGen', 'Curtis Magazines', 'Disney Books Group', 'Disney Kingdoms', 'Epic Comics', 'Eternity Comics', 'Humorama', 'Icon Comics', 'Infinite Comics', 'Malibu Comics', 'Marvel 2099', 'Marvel Absurd', 'Marvel Adventures', 'Marvel Age', 'Marvel Books', 'Marvel Comics 2', 'Marvel Comics', 'Marvel Edge', 'Marvel Frontier', 'Marvel Illustrated', 'Marvel Knights', 'Marvel Magazine Group', 'Marvel Mangaverse', 'Marvel Monsters Group', 'Marvel Music', 'Marvel Next', 'Marvel Noir', 'Marvel Press', 'Marvel UK', 'Marvel Unlimited', 'Max', 'MAX', 'MC2', 'New Universe', 'Non-Pareil Publishing Corp.', 'Paramount Comics', 'Power Comics', 'Razorline', 'Star Comics', 'Timely Comics', 'Timely', 'Tsunami', 'Ultimate Comics', 'Ultimate Marvel', 'Vital Publications, Inc.',]
+        DC_Comics = ['All Star', 'Amalgam Comics', 'America\'s Best Comics', 'Cliffhanger', 'CMX Manga', 'DC Black Label', 'DC Focus', 'DC Ink', 'DC Zoom', 'DC', 'Earth-M', 'Elseworlds', 'First Wave', 'Helix', 'Homage Comics', 'Impact Comics', 'Johnny DC', 'Mad', 'Minx', 'Paradox Press', 'Piranha Press', 'Sandman Universe', 'Tangent Comics', 'Vertigo', 'WildStorm Productions', 'WildStorm Signature', 'WildStorm', 'Wildstorm', 'wildstorm', 'Wonder Comics', 'Young Animal', 'Zuda Comics']
+        if self.publisher in Marvel:
+            self.imprint = self.publisher
+            self.publisher = 'Marvel'
+
+        if self.publisher in DC_Comics:
+            self.imprint = self.publisher
+            self.publisher = 'DC Comics'
+

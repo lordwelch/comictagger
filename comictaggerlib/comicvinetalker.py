@@ -138,9 +138,9 @@ class ComicVineTalker(QObject):
                 key + "&format=json&field_list=name"
             resp = urllib.request.urlopen(test_url, context=self.ssl)
             content = resp.read()
-    
+
             cv_response = json.loads(content.decode('utf-8'))
-    
+
             # Bogus request, but if the key is wrong, you get error 100: "Invalid
             # API Key"
             return cv_response['status_code'] != 100
@@ -249,15 +249,15 @@ class ComicVineTalker(QObject):
         # 8 Dec 2018 - Comic Vine changed query results again. Terms are now
         # ORed together, and we get thousands of results.  Good news is the
         # results are sorted by relevance, so we can be smart about halting
-        # the search.  
+        # the search.
         # 1. Don't fetch more than some sane amount of pages.
-        max_results = 500 
+        max_results = 500
         # 2. Halt when not all of our search terms are present in a result
         # 3. Halt when the results contain more (plus threshold) words than
         #    our search
         result_word_count_max = len(query_word_list) + 3
 
-        total_result_count = min(total_result_count, max_results) 
+        total_result_count = min(total_result_count, max_results)
 
         if callback is None:
             self.writeLog(
@@ -286,7 +286,7 @@ class ComicVineTalker(QObject):
                     break
 
             # Also, stop searching when the word count of last results is too much longer
-            # than our search terms list 
+            # than our search terms list
             if len(utils.removearticles(last_result).split()) > result_word_count_max:
                 #print("Last result '{}' is too long. Halting search result fetching".format(last_result))
                 stop_searching = True
@@ -557,6 +557,9 @@ class ComicVineTalker(QObject):
         if len(arc_list) > 0:
             metadata.storyArc = utils.listToString(arc_list)
 
+        if settings.autoImprint:
+            metadata.fixPublisher()
+
         return metadata
 
     def cleanup_html(self, string, remove_html_tables):
@@ -731,9 +734,9 @@ class ComicVineTalker(QObject):
 
     def parseOutAltCoverUrls(self, page_html):
         soup = BeautifulSoup(page_html, "html.parser")
-    
+
         alt_cover_url_list = []
-    
+
         # Using knowledge of the layout of the Comic Vine issue page here:
         # look for the divs that are in the classes 'imgboxart' and
         # 'issue-cover'
@@ -742,15 +745,15 @@ class ComicVineTalker(QObject):
         for d in div_list:
             if 'class' in d.attrs:
                 c = d['class']
-                if ('imgboxart' in c and 
+                if ('imgboxart' in c and
                         'issue-cover' in c and
                         d.img['src'].startswith("http")
                    ):
-                    
+
                     covers_found += 1
                     if covers_found != 1:
                             alt_cover_url_list.append(d.img['src'])
-    
+
         return alt_cover_url_list
 
     def fetchCachedAlternateCoverURLs(self, issue_id):
