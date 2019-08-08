@@ -25,6 +25,7 @@ import json
 import webbrowser
 import re
 import pickle
+import datetime
 #import signal
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
@@ -183,8 +184,10 @@ class TaggerWindow(QtWidgets.QMainWindow):
         self.resetApp()
 
         # set up some basic field validators
-        validator = QtGui.QIntValidator(1900, 2099, self)
+        validator = QtGui.QIntValidator(1900, datetime.date.today().year + 15, self)
         self.lePubYear.setValidator(validator)
+
+        self.leSeriesPubYear.setValidator(validator)
 
         validator = QtGui.QIntValidator(1, 12, self)
         self.lePubMonth.setValidator(validator)
@@ -799,15 +802,18 @@ class TaggerWindow(QtWidgets.QMainWindow):
         md = self.metadata
 
         assignText(self.leSeries, md.series)
-        assignText(self.leIssueNum, md.issue)
-        assignText(self.leIssueCount, md.issueCount)
+        if md.issue is not None and md.issue != 0 and md.issue != "0":
+            md.issue = md.issue.lstrip("0")
+        assignText(self.leIssueNum, str(md.issue or ""))
+        assignText(self.leIssueCount, str(md.issueCount or "").lstrip("0"))
         assignText(self.leVolumeNum, md.volume)
-        assignText(self.leVolumeCount, md.volumeCount)
+        assignText(self.leVolumeCount, str(md.volumeCount or "").lstrip("0"))
         assignText(self.leTitle, md.title)
         assignText(self.lePublisher, md.publisher)
-        assignText(self.lePubMonth, md.month)
-        assignText(self.lePubYear, md.year)
-        assignText(self.lePubDay, md.day)
+        assignText(self.lePubMonth, str(md.month or "").lstrip("0"))
+        assignText(self.lePubYear, str(md.year or "").lstrip("0"))
+        assignText(self.leSeriesPubYear, str(md.seriesYear or "").lstrip("0"))
+        assignText(self.lePubDay, str(md.day or "").lstrip("0"))
         assignText(self.leGenre, md.genre)
         assignText(self.leImprint, md.imprint)
         assignText(self.teComments, md.comments)
@@ -915,52 +921,56 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
         # helper func
         def xlate(data, type_str):
-            s = "{0}".format(data).strip()
+            s = "{0}".format((data or "")).strip()
             if s == "":
-                return None
+                return ""
             elif type_str == "str":
                 return s
             else:
-                return int(s)
+                return str(int(s))
 
         # copy the data from the form into the metadata
-        md = self.metadata
-        md.series = xlate(self.leSeries.text(), "str")
-        md.issue = xlate(self.leIssueNum.text(), "str")
-        md.issueCount = xlate(self.leIssueCount.text(), "int")
-        md.volume = xlate(self.leVolumeNum.text(), "int")
-        md.volumeCount = xlate(self.leVolumeCount.text(), "int")
-        md.title = xlate(self.leTitle.text(), "str")
-        md.publisher = xlate(self.lePublisher.text(), "str")
-        md.month = xlate(self.lePubMonth.text(), "int")
-        md.year = xlate(self.lePubYear.text(), "int")
-        md.day = xlate(self.lePubDay.text(), "int")
-        md.genre = xlate(self.leGenre.text(), "str")
-        md.imprint = xlate(self.leImprint.text(), "str")
-        md.comments = xlate(self.teComments.toPlainText(), "str")
-        md.notes = xlate(self.teNotes.toPlainText(), "str")
-        md.criticalRating = xlate(self.leCriticalRating.text(), "int")
-        md.maturityRating = xlate(self.cbMaturityRating.currentText(), "str")
+        self.metadata.series = xlate(self.leSeries.text(), "str")
+        self.metadata.issue = xlate(self.leIssueNum.text(), "str")
+        if self.metadata.issue == 0 or self.metadata.issue == "0":
+            self.metadata.issue = "0"
+        else:
+            self.metadata.issue = self.metadata.issue.lstrip("0")
+        self.metadata.issueCount = xlate(self.leIssueCount.text().lstrip("0"), "int")
+        self.metadata.volume = xlate(self.leVolumeNum.text(), "int")
+        self.metadata.volumeCount = xlate(self.leVolumeCount.text().lstrip("0"), "int")
+        self.metadata.title = xlate(self.leTitle.text(), "str")
+        self.metadata.publisher = xlate(self.lePublisher.text(), "str")
+        self.metadata.seriesYear = xlate(self.leSeriesPubYear.text().lstrip("0"), "int")
+        self.metadata.month = xlate(self.lePubMonth.text().lstrip("0"), "int")
+        self.metadata.year = xlate(self.lePubYear.text().lstrip("0"), "int")
+        self.metadata.day = xlate(self.lePubDay.text().lstrip("0"), "int")
+        self.metadata.genre = xlate(self.leGenre.text(), "str")
+        self.metadata.imprint = xlate(self.leImprint.text(), "str")
+        self.metadata.comments = xlate(self.teComments.toPlainText(), "str")
+        self.metadata.notes = xlate(self.teNotes.toPlainText(), "str")
+        self.metadata.criticalRating = xlate(self.leCriticalRating.text(), "int")
+        self.metadata.maturityRating = xlate(self.cbMaturityRating.currentText(), "str")
 
-        md.storyArc = xlate(self.leStoryArc.text(), "str")
-        md.scanInfo = xlate(self.leScanInfo.text(), "str")
-        md.seriesGroup = xlate(self.leSeriesGroup.text(), "str")
-        md.alternateSeries = xlate(self.leAltSeries.text(), "str")
-        md.alternateNumber = xlate(self.leAltIssueNum.text(), "int")
-        md.alternateCount = xlate(self.leAltIssueCount.text(), "int")
-        md.webLink = xlate(self.leWebLink.text(), "str")
-        md.characters = xlate(self.teCharacters.toPlainText(), "str")
-        md.teams = xlate(self.teTeams.toPlainText(), "str")
-        md.locations = xlate(self.teLocations.toPlainText(), "str")
+        self.metadata.storyArc = xlate(self.leStoryArc.text(), "str")
+        self.metadata.scanInfo = xlate(self.leScanInfo.text(), "str")
+        self.metadata.seriesGroup = xlate(self.leSeriesGroup.text(), "str")
+        self.metadata.alternateSeries = xlate(self.leAltSeries.text(), "str")
+        self.metadata.alternateNumber = xlate(self.leAltIssueNum.text(), "int")
+        self.metadata.alternateCount = xlate(self.leAltIssueCount.text(), "int")
+        self.metadata.webLink = xlate(self.leWebLink.text(), "str")
+        self.metadata.characters = xlate(self.teCharacters.toPlainText(), "str")
+        self.metadata.teams = xlate(self.teTeams.toPlainText(), "str")
+        self.metadata.locations = xlate(self.teLocations.toPlainText(), "str")
 
-        md.format = xlate(self.cbFormat.currentText(), "str")
-        md.country = xlate(self.cbCountry.currentText(), "str")
+        self.metadata.format = xlate(self.cbFormat.currentText(), "str")
+        self.metadata.country = xlate(self.cbCountry.currentText(), "str")
 
         langiso = self.cbLanguage.itemData(self.cbLanguage.currentIndex())
-        md.language = xlate(langiso, "str")
+        self.metadata.language = xlate(langiso, "str")
 
         manga_code = self.cbManga.itemData(self.cbManga.currentIndex())
-        md.manga = xlate(manga_code, "str")
+        self.metadata.manga = xlate(manga_code, "str")
 
         # Make a list from the coma delimited tags string
         tmp = xlate(self.teTags.toPlainText(), "str")
@@ -968,25 +978,25 @@ class TaggerWindow(QtWidgets.QMainWindow):
             def striplist(l):
                 return([x.strip() for x in l])
 
-            md.tags = striplist(tmp.split(","))
+            self.metadata.tags = striplist(tmp.split(","))
 
         if (self.cbBW.isChecked()):
-            md.blackAndWhite = True
+            self.metadata.blackAndWhite = True
         else:
-            md.blackAndWhite = False
+            self.metadata.blackAndWhite = False
 
         # get the credits from the table
-        md.credits = list()
+        self.metadata.credits = list()
         row = 0
         while row < self.twCredits.rowCount():
             role = "{0}".format(self.twCredits.item(row, 1).text())
             name = "{0}".format(self.twCredits.item(row, 2).text())
             primary_flag = self.twCredits.item(row, 0).text() != ""
 
-            md.addCredit(name, role, bool(primary_flag))
+            self.metadata.addCredit(name, role, bool(primary_flag))
             row += 1
 
-        md.pages = self.pageListEditor.getPageList()
+        self.metadata.pages = self.pageListEditor.getPageList()
 
     def useFilename(self):
         if self.comic_archive is not None:

@@ -119,16 +119,16 @@ class ComicVineTalker(QObject):
             self.log_func(text)
 
     def parseDateStr(self, date_str):
-        day = None
-        month = None
-        year = None
+        day = ""
+        month = ""
+        year = ""
         if date_str is not None:
             parts = date_str.split('-')
-            year = parts[0]
+            year = parts[0].lstrip("0")
             if len(parts) > 1:
-                month = parts[1]
+                month = parts[1].lstrip("0")
                 if len(parts) > 2:
-                    day = parts[2]
+                    day = parts[2].lstrip("0")
         return day, month, year
 
     def testKey(self, key):
@@ -229,13 +229,13 @@ class ComicVineTalker(QObject):
         # Split and rejoin to remove extra internal spaces
         query_word_list = series_name.split()
         query_string = " ".join( query_word_list ).strip()
-        #print ("Query string = ", query_string)
+        print ("Query string = ", query_string)
 
         query_string = urllib.parse.quote_plus(query_string.encode("utf-8"))
 
         search_url = self.api_base_url + "/search/?api_key=" + self.api_key + "&format=json&resources=volume&query=" + \
             query_string + \
-            "&field_list=name,id,start_year,publisher,image,description,count_of_issues"
+            "&field_list=volume,name,id,start_year,publisher,image,description,count_of_issues"
         cv_response = self.getCVContent(search_url + "&page=1")
 
         search_results = list()
@@ -500,18 +500,20 @@ class ComicVineTalker(QObject):
         metadata.series = issue_results['volume']['name']
 
         num_s = IssueString(issue_results['issue_number']).asString()
-        metadata.issue = num_s
-        metadata.title = issue_results['name']
+        metadata.issue = str(num_s or "")
+        metadata.title = issue_results['name'] or ""
 
-        metadata.publisher = volume_results['publisher']['name']
+        if volume_results['publisher'] is not None:
+            metadata.publisher = volume_results['publisher']['name'] or ""
         metadata.day, metadata.month, metadata.year = self.parseDateStr(
             issue_results['cover_date'])
 
-        #metadata.issueCount = volume_results['count_of_issues']
+        metadata.seriesYear = str(volume_results['start_year'] or "")
+        metadata.issueCount = str(volume_results['count_of_issues'] or "")
         metadata.comments = self.cleanup_html(
             issue_results['description'], settings.remove_html_tables)
         if settings.use_series_start_as_volume:
-            metadata.volume = volume_results['start_year']
+            metadata.volume = str(volume_results['start_year'] or "")
 
         metadata.notes = "Tagged with ComicTagger {0} using info from Comic Vine on {1}.  [Issue ID {2}]".format(
             ctversion.version,
