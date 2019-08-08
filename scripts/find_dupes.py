@@ -1,49 +1,57 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """Find all duplicate comics"""
 
-#import sys
+import sys
+import json
 
 from comictaggerlib.comicarchive import *
 from comictaggerlib.settings import *
-#from comictaggerlib.issuestring import *
-#import comictaggerlib.utils
+from comictaggerlib.issuestring import *
+import comictaggerlib.utils
+import subprocess
+import os
 
 
 def main():
-    utils.fix_output_encoding()
+#    utils.fix_output_encoding()
     settings = ComicTaggerSettings()
 
     style = MetaDataStyle.CIX
 
     if len(sys.argv) < 2:
-        print >> sys.stderr, "Usage:  {0} [comic_folder]".format(sys.argv[0])
+        print("Usage:  {0} [comic_folder]".format(sys.argv[0]))
         return
 
+    dupecmp = os.path.join(os.getcwd(), "dupecmp")
+    if os.path.exists(dupecmp):
+        subprocess.run(["bash", "-c", "rm -rf *"], cwd=dupecmp)
+    else:
+        os.mkdir(dupecmp)
     filelist = utils.get_recursive_filelist(sys.argv[1:])
 
     # first find all comics with metadata
-    print >> sys.stderr, "Reading in all comics..."
+    print("Reading in all comics...", file=sys.stderr)
     comic_list = []
     fmt_str = ""
     max_name_len = 2
     for filename in filelist:
-        ca = ComicArchive(filename, settings.rar_exe_path)
+        ca = ComicArchive(filename, settings.rar_exe_path, default_image_path='/home/timmy/build/source/comictagger-test/comictaggerlib/graphics/nocover.png')
         if ca.seemsToBeAComicArchive() and ca.hasMetadata(style):
-            max_name_len = max(max_name_len, len(filename))
-            fmt_str = u"{{0:{0}}}".format(max_name_len)
-            print >> sys.stderr, fmt_str.format(filename) + "\r",
+            fmt_str = "{{0:{0}}}".format(max_name_len)
+            print(fmt_str.format(filename) + "\r", end='', file=sys.stderr)
             sys.stderr.flush()
             comic_list.append((filename, ca.readMetadata(style)))
+            max_name_len = len(filename)
 
-    print >> sys.stderr, fmt_str.format("") + "\r",
-    print "--------------------------------------------------------------------------"
-    print "Found {0} comics with {1} tags".format(len(comic_list), MetaDataStyle.name[style])
-    print "--------------------------------------------------------------------------"
+    print("", file=sys.stderr)
+    print("--------------------------------------------------------------------------", file=sys.stderr)
+    print("Found {0} comics with {1} tags".format(len(comic_list), MetaDataStyle.name[style]), file=sys.stderr)
+    print("--------------------------------------------------------------------------", file=sys.stderr)
 
     # sort the list by series+issue+year, to put all the dupes together
     def makeKey(x):
-        return "<" + unicode(x[1].series) + u" #" + \
-            unicode(x[1].issue) + u" - " + unicode(x[1].year) + ">"
+        return "<" + str(x[1].series) + " #" + \
+            str(x[1].issue) + " - " + str(x[1].title) + " - " + str(x[1].year) + ">"
     comic_list.sort(key=makeKey, reverse=False)
 
     # look for duplicate blocks
@@ -51,8 +59,7 @@ def main():
     dupe_set = list()
     prev_key = ""
     for filename, md in comic_list:
-        print >> sys.stderr, fmt_str.format(filename) + "\r",
-        sys.stderr.flush()
+        # sys.stderr.flush()
 
         new_key = makeKey((filename, md))
 
@@ -70,15 +77,25 @@ def main():
 
         prev_key = new_key
 
-    print >> sys.stderr, fmt_str.format("") + "\r",
-    print "Found {0} duplicate sets".format(len(dupe_set_list))
+    if len(dupe_set) > 1:
+        dupe_set_list.append(dupe_set)
+
+
+    # print(json.dumps(dupe_set_list, indent=4))
+    # print(fmt_str.format("") + "\r", end=' ', file=sys.stderr)
+    # print("Found {0} duplicate sets".format(len(dupe_set_list)))
+
 
     for dupe_set in dupe_set_list:
-        ca = ComicArchive(dupe_set[0], settings.rar_exe_path)
-        md = ca.readMetadata(style)
-        print "{0} #{1} ({2})".format(md.series, md.issue, md.year)
-        for filename in dupe_set:
-            print "------>{0}".format(filename)
+        subprocess.run(["cp"] + dupe_set + [dupecmp])
+        subprocess.run(["dup-comic.sh"], cwd=dupecmp)
 
-if __name__ == '__main__':
-    main()
+
+    #     ca = ComicArchive(dupe_set[0], settings.rar_exe_path)
+    #     md = ca.readMetadata(style)
+    #     print("{0} #{1} ({2})".format(md.series, md.issue, md.year))
+    #     for filename in dupe_set:
+    #         print("------>{0}".format(filename))
+
+#if __name__ == '__main__':
+main()
