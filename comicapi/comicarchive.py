@@ -43,7 +43,7 @@ try:
             ctypes.c_uint,
             # UserData
             ctypes.c_long,
-            # MONKEY PATCH HERE -- use a pointer instead of a long, in unrar code: (LPARAM)(*byte), 
+            # MONKEY PATCH HERE -- use a pointer instead of a long, in unrar code: (LPARAM)(*byte),
             # that is a pointer to byte casted to LPARAM
             # On win10 64bit causes nasty segfaults when used from pyinstaller
             ctypes.POINTER(ctypes.c_byte),
@@ -224,7 +224,7 @@ class ZipArchiver:
 
             found = False
             value = bytearray()
-            
+
             # walk backwards to find the "End of Central Directory" record
             while (not found) and (-pos != file_length):
                 # seek, relative to EOF
@@ -331,7 +331,7 @@ class RarArchiver:
                 f.close()
 
                 working_dir = os.path.dirname(os.path.abspath(self.path))
-                
+
                 # use external program to write comment to Rar archive
                 proc_args = [self.rar_exe_path,
                                  'c',
@@ -774,15 +774,18 @@ class ComicArchive:
             return False
 
     def readMetadata(self, style):
-
+        md = None
         if style == MetaDataStyle.CIX:
-            return self.readCIX()
+            md = self.readCIX()
         elif style == MetaDataStyle.CBI:
-            return self.readCBI()
+            md = self.readCBI()
         elif style == MetaDataStyle.COMET:
-            return self.readCoMet()
-        else:
+            md = self.readCoMet()
+
+        if md is None:
             return GenericMetadata()
+        else:
+            return md
 
     def writeMetadata(self, metadata, style):
 
@@ -945,7 +948,7 @@ class ComicArchive:
 
             self.cbi_md.setDefaultPageList(self.getNumberOfPages())
 
-        return self.cbi_md
+        return self.cbi_md or GenericMetadata()
 
     def readRawCBI(self):
         if (not self.hasCBI()):
@@ -1007,7 +1010,7 @@ class ComicArchive:
             if len(self.cix_md.pages) == 0:
                 self.cix_md.setDefaultPageList(self.getNumberOfPages())
 
-        return self.cix_md
+        return self.cix_md or GenericMetadata()
 
     def readRawCIX(self):
         if not self.hasCIX():
@@ -1080,7 +1083,7 @@ class ComicArchive:
                     self.comet_md.pages[cover_idx][
                         'Type'] = PageType.FrontCover
 
-        return self.comet_md
+        return self.comet_md or GenericMetadata()
 
     def readRawCoMet(self):
         if not self.hasCoMet():
