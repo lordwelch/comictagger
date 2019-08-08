@@ -147,6 +147,28 @@ class FileNameParser:
 
         return issue, start, end
 
+    def getVolume(self, filename):
+        volume = ""
+        match = re.search('(.+)(([vV]|[Vv][oO][Ll]\.?\s?)(\d+))\s*(.+)', filename)
+
+        if match:
+            volume = match.group(2)
+
+        # if a volume wasn't found, see if the last word is a year in parentheses
+        # since that's a common way to designate the volume
+        if volume == "":
+            try:
+                last_word = series.split()[-1]
+            except:
+                last_word = ""
+            # match either (YEAR), (YEAR-), or (YEAR-YEAR2)
+            match = re.search("(\()(\d{4})(-(\d{4}|)|)(\))", last_word)
+            if match:
+                volume = match.group(2)
+
+        return volume.strip(' \t\r\n.')
+
+
     def getSeriesName(self, filename, issue_start):
         """Use the issue number string index to split the filename string"""
 
@@ -168,7 +190,6 @@ class FileNameParser:
         tmpstr = self.fixSpaces(filename, remove_dashes=False)
 
         series = tmpstr
-        volume = ""
 
         # save the last word
         try:
@@ -178,20 +199,9 @@ class FileNameParser:
 
         # remove any parenthetical phrases
         series = re.sub("\(.*?\)", "", series)
-
-        # search for volume number
-        match = re.search('(.+)([vV]|[Vv][oO][Ll]\.?\s?)(\d+)\s*$', series)
+        match = re.search('(.+)([vV]|[Vv][oO][Ll]\.?\s?)(\d+)\s*(.+)', series)
         if match:
-            series = match.group(1)
-            volume = match.group(3)
-
-        # if a volume wasn't found, see if the last word is a year in parentheses
-        # since that's a common way to designate the volume
-        if volume == "":
-            # match either (YEAR), (YEAR-), or (YEAR-YEAR2)
-            match = re.search("(\()(\d{4})(-(\d{4}|)|)(\))", last_word)
-            if match:
-                volume = match.group(2)
+            series = match.group(1) + match.group(4)
 
         series = series.strip()
 
@@ -207,7 +217,7 @@ class FileNameParser:
             except:
                 pass
 
-        return series, volume.strip()
+        return series.strip(" \t\r\n.")
 
     def getYear(self, filename, issue_end):
 
@@ -243,9 +253,7 @@ class FileNameParser:
             remainder = remainder.replace("of " + count, "", 1)
 
         remainder = remainder.replace("()", "")
-        remainder = remainder.replace(
-            "  ",
-            " ")    # cleans some whitespace mess
+        remainder = remainder.replace("  ", " ") # cleans some whitespace mess
 
         return remainder.strip()
 
@@ -267,8 +275,12 @@ class FileNameParser:
             filename = filename.replace("_28", "(")
             filename = filename.replace("_29", ")")
 
+        self.volume = self.getVolume(filename)
+        filename = filename.replace(self.volume, '')
+
+        self.volume = self.volume.strip("vVoOlL. \t\r\n")
         self.issue, issue_start, issue_end = self.getIssueNumber(filename)
-        self.series, self.volume = self.getSeriesName(filename, issue_start)
+        self.series = self.getSeriesName(filename, issue_start)
 
         # provides proper value when the filename doesn't have a issue number
         if issue_end == 0:
