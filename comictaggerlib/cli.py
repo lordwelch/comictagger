@@ -1,5 +1,14 @@
 #!/usr/bin/python
 
+from . import utils
+from .cbltransformer import CBLTransformer
+from .filerenamer import FileRenamer
+from .comicvinetalker import ComicVineTalker, ComicVineTalkerException
+from .genericmetadata import GenericMetadata
+from .issueidentifier import IssueIdentifier
+from .comicarchive import ComicArchive, MetaDataStyle
+from .options import Options
+from .settings import ComicTaggerSettings
 """ComicTagger CLI functions"""
 
 # Copyright 2013 Anthony Beville
@@ -29,16 +38,6 @@ import json
 
 filename_encoding = sys.getfilesystemencoding()
 
-from .settings import ComicTaggerSettings
-from .options import Options
-from .comicarchive import ComicArchive, MetaDataStyle
-from .issueidentifier import IssueIdentifier
-from .genericmetadata import GenericMetadata
-from .comicvinetalker import ComicVineTalker, ComicVineTalkerException
-from .filerenamer import FileRenamer
-from .cbltransformer import CBLTransformer
-from . import utils
-
 
 class MultipleMatch():
 
@@ -57,7 +56,7 @@ class OnlineMatchResults():
         self.writeFailures = []
         self.fetchDataFailures = []
 
-#-----------------------------
+# -----------------------------
 
 
 def actual_issue_data_fetch(match, settings, opts):
@@ -69,7 +68,8 @@ def actual_issue_data_fetch(match, settings, opts):
         cv_md = comicVine.fetchIssueData(
             match['volume_id'], match['issue_number'], settings)
     except ComicVineTalkerException:
-        print("Network error while getting issue details.  Save aborted", file=sys.stderr)
+        print("Network error while getting issue details.  Save aborted",
+              file=sys.stderr)
         return None
 
     if settings.apply_cbl_transform_on_cv_import:
@@ -229,8 +229,8 @@ def process_file_cli(filename, opts, settings, match_results):
         return
 
     if not ca.seemsToBeAComicArchive():
-        print("Sorry, but " + \
-            filename + "  is not a comic archive!", file=sys.stderr)
+        print("Sorry, but " +
+              filename + "  is not a comic archive!", file=sys.stderr)
         return
 
     # if not ca.isWritableForStyle(opts.data_style) and (opts.delete_tags or
@@ -389,7 +389,8 @@ def process_file_cli(filename, opts, settings, match_results):
                     cv_md = comicVine.fetchIssueDataByIssueID(
                         opts.issue_id, settings)
                 except ComicVineTalkerException:
-                    print("Network error while getting issue details.  Save aborted", file=sys.stderr)
+                    print(
+                        "Network error while getting issue details.  Save aborted", file=sys.stderr)
                     match_results.fetchDataFailures.append(filename)
                     return
 
@@ -405,7 +406,8 @@ def process_file_cli(filename, opts, settings, match_results):
                 ii = IssueIdentifier(ca, settings)
 
                 if md is None or md.isEmpty:
-                    print("No metadata given to search online with!", file=sys.stderr)
+                    print("No metadata given to search online with!",
+                          file=sys.stderr)
                     match_results.noMatches.append(filename)
                     return
 
@@ -444,22 +446,26 @@ def process_file_cli(filename, opts, settings, match_results):
 
                 if choices:
                     if low_confidence:
-                        print("Online search: Multiple low confidence matches.  Save aborted", file=sys.stderr)
+                        print(
+                            "Online search: Multiple low confidence matches.  Save aborted", file=sys.stderr)
                         match_results.lowConfidenceMatches.append(
                             MultipleMatch(filename, matches))
                         return
                     else:
-                        print("Online search: Multiple good matches.  Save aborted", file=sys.stderr)
+                        print(
+                            "Online search: Multiple good matches.  Save aborted", file=sys.stderr)
                         match_results.multipleMatches.append(
                             MultipleMatch(filename, matches))
                         return
                 if low_confidence and opts.abortOnLowConfidence:
-                    print("Online search: Low confidence match.  Save aborted", file=sys.stderr)
+                    print(
+                        "Online search: Low confidence match.  Save aborted", file=sys.stderr)
                     match_results.lowConfidenceMatches.append(
                         MultipleMatch(filename, matches))
                     return
                 if not found_match:
-                    print("Online search: No match found.  Save aborted", file=sys.stderr)
+                    print("Online search: No match found.  Save aborted",
+                          file=sys.stderr)
                     match_results.noMatches.append(filename)
                     return
 
@@ -545,7 +551,8 @@ def process_file_cli(filename, opts, settings, match_results):
         new_file = os.path.splitext(rar_file)[0] + ".cbz"
 
         if opts.abort_export_on_conflict and os.path.lexists(new_file):
-            print(msg_hdr + "{0} already exists in the that folder.".format(os.path.split(new_file)[1]))
+            print(
+                msg_hdr + "{0} already exists in the that folder.".format(os.path.split(new_file)[1]))
             return
 
         new_file = utils.unique_file(os.path.join(new_file))
@@ -559,8 +566,8 @@ def process_file_cli(filename, opts, settings, match_results):
                     try:
                         os.unlink(rar_file)
                     except:
-                        print(msg_hdr + \
-                            "Error deleting original RAR after export", file=sys.stderr)
+                        print(msg_hdr +
+                              "Error deleting original RAR after export", file=sys.stderr)
                         delete_success = False
                     else:
                         delete_success = True

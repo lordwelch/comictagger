@@ -19,7 +19,9 @@ import os
 import datetime
 import shutil
 import tempfile
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import ssl
 #import urllib2
 
@@ -90,7 +92,8 @@ class ImageFetcher(QObject):
         if blocking:
             if image_data is None:
                 try:
-                    image_data = urllib.request.urlopen(url, context=self.ssl).read()
+                    image_data = urllib.request.urlopen(
+                        url, context=self.ssl).read()
                 except Exception as e:
                     print(e)
                     raise ImageFetcherException("Network Error!")

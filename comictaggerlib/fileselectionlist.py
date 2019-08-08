@@ -38,7 +38,7 @@ from . import utils
 class FileTableWidgetItem(QTableWidgetItem):
 
     def __lt__(self, other):
-        #return (self.data(Qt.UserRole).toBool() <
+        # return (self.data(Qt.UserRole).toBool() <
         #        other.data(Qt.UserRole).toBool())
         return (self.data(Qt.UserRole) <
                 other.data(Qt.UserRole))
@@ -190,14 +190,15 @@ class FileSelectionList(QWidget):
         # we now have a list of files to add
 
         # Prog dialog on Linux flakes out for small range, so scale up
-        progdialog = QProgressDialog("", "Cancel", 0, len(filelist), parent=self)
+        progdialog = QProgressDialog(
+            "", "Cancel", 0, len(filelist), parent=self)
         progdialog.setWindowTitle("Adding Files")
         progdialog.setWindowModality(Qt.ApplicationModal)
         progdialog.setMinimumDuration(300)
         centerWindowOnParent(progdialog)
-        #QCoreApplication.processEvents()
-        #progdialog.show()
-        
+        # QCoreApplication.processEvents()
+        # progdialog.show()
+
         QCoreApplication.processEvents()
         firstAdded = None
         self.twList.setSortingEnabled(False)
@@ -212,7 +213,7 @@ class FileSelectionList(QWidget):
             row = self.addPathItem(f)
             if firstAdded is None and row is not None:
                 firstAdded = row
- 
+
         progdialog.hide()
         QCoreApplication.processEvents()
 
@@ -241,8 +242,8 @@ class FileSelectionList(QWidget):
                 ext = os.path.splitext(pathlist[0])[1].lower()
                 if ext == ".rar" or ext == ".cbr" and self.settings.unrar_lib_path == "":
                     QMessageBox.information(self, self.tr("File Open"), self.tr(
-                     "Selected file seems to be a rar file, "
-                     "and can't be read until the unrar library is configured."))
+                        "Selected file seems to be a rar file, "
+                        "and can't be read until the unrar library is configured."))
                 else:
                     QMessageBox.information(self, self.tr("File Open"), self.tr(
                         "Selected file doesn't seem to be a comic archive."))
@@ -342,7 +343,7 @@ class FileSelectionList(QWidget):
 
     def updateRow(self, row):
         fi = self.twList.item(row, FileSelectionList.dataColNum).data(
-            Qt.UserRole) #.toPyObject()
+            Qt.UserRole)  # .toPyObject()
 
         filename_item = self.twList.item(row, FileSelectionList.fileColNum)
         folder_item = self.twList.item(row, FileSelectionList.folderColNum)
@@ -440,7 +441,7 @@ class FileSelectionList(QWidget):
                 return
 
         fi = self.twList.item(new_idx, FileSelectionList.dataColNum).data(
-            Qt.UserRole) #.toPyObject()
+            Qt.UserRole)  # .toPyObject()
         self.selectionChanged.emit(QVariant(fi))
 
     def revertSelection(self):

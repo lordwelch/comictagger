@@ -13,7 +13,7 @@ import os
 
 
 def main():
-#    utils.fix_output_encoding()
+    #    utils.fix_output_encoding()
     settings = ComicTaggerSettings()
 
     style = MetaDataStyle.CIX
@@ -50,8 +50,7 @@ def main():
 
     # sort the list by series+issue+year, to put all the dupes together
     def makeKey(x):
-        return "<" + str(x[1].series) + " #" + \
-            str(x[1].issue) + " - " + str(x[1].title) + " - " + str(x[1].year) + ">"
+        return "<" + str(x[1].series) + " #" + str(x[1].issue) + " - " + str(x[1].title) + " - " + str(x[1].year) + ">"
     comic_list.sort(key=makeKey, reverse=False)
 
     # look for duplicate blocks
@@ -80,16 +79,13 @@ def main():
     if len(dupe_set) > 1:
         dupe_set_list.append(dupe_set)
 
-
     # print(json.dumps(dupe_set_list, indent=4))
     # print(fmt_str.format("") + "\r", end=' ', file=sys.stderr)
     # print("Found {0} duplicate sets".format(len(dupe_set_list)))
 
-
     for dupe_set in dupe_set_list:
         subprocess.run(["cp"] + dupe_set + [dupecmp])
         subprocess.run(["dup-comic.sh"], cwd=dupecmp)
-
 
     #     ca = ComicArchive(dupe_set[0], settings.rar_exe_path)
     #     md = ca.readMetadata(style)
@@ -97,5 +93,6 @@ def main():
     #     for filename in dupe_set:
     #         print("------>{0}".format(filename))
 
-#if __name__ == '__main__':
+
+# if __name__ == '__main__':
 main()

@@ -145,7 +145,8 @@ class VolumeSelectionWindow(QtWidgets.QDialog):
         self.btnRequery.setEnabled(enabled)
         self.btnIssues.setEnabled(enabled)
         self.btnAutoSelect.setEnabled(enabled)
-        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(enabled)
+        self.buttonBox.button(
+            QtWidgets.QDialogButtonBox.Ok).setEnabled(enabled)
 
     def requery(self,):
         self.performQuery(refresh=True)
@@ -293,7 +294,7 @@ class VolumeSelectionWindow(QtWidgets.QDialog):
         self.progdialog.canceled.connect(self.searchCanceled)
         self.progdialog.setModal(True)
         self.progdialog.setMinimumDuration(300)
-        QtCore.QCoreApplication.processEvents()        
+        QtCore.QCoreApplication.processEvents()
         self.search_thread = SearchThread(self.series_name, refresh)
         self.search_thread.searchComplete.connect(self.searchComplete)
         self.search_thread.progressUpdate.connect(self.searchProgressUpdate)
@@ -405,8 +406,9 @@ class VolumeSelectionWindow(QtWidgets.QDialog):
         if prev is not None and prev.row() == curr.row():
             return
 
-        self.volume_id = self.twList.item(curr.row(), 0).data(QtCore.Qt.UserRole)
-             
+        self.volume_id = self.twList.item(
+            curr.row(), 0).data(QtCore.Qt.UserRole)
+
         # list selection was changed, update the info on the volume
         for record in self.cv_search_results:
             if record['id'] == self.volume_id:

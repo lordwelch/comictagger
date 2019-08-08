@@ -16,7 +16,9 @@
 
 import sys
 import platform
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 #import os
 #import urllib
 

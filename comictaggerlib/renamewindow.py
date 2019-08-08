@@ -22,7 +22,7 @@ from .settings import ComicTaggerSettings
 from .settingswindow import SettingsWindow
 from .filerenamer import FileRenamer
 from .comicarchive import MetaDataStyle
-from comictaggerlib.ui.qtutils import  centerWindowOnParent
+from comictaggerlib.ui.qtutils import centerWindowOnParent
 from . import utils
 
 
@@ -136,7 +136,7 @@ class RenameWindow(QtWidgets.QDialog):
         progdialog.setWindowModality(QtCore.Qt.WindowModal)
         progdialog.setMinimumDuration(100)
         centerWindowOnParent(progdialog)
-        #progdialog.show()
+        # progdialog.show()
         QtCore.QCoreApplication.processEvents()
 
         for idx, item in enumerate(self.rename_list):
@@ -154,7 +154,8 @@ class RenameWindow(QtWidgets.QDialog):
             if self.settings.rename_move_dir and len(self.settings.rename_dir.strip()) > 3:
                 folder = self.settings.rename_dir.strip()
 
-            new_abs_path = utils.unique_file(os.path.join(folder, item['new_name']))
+            new_abs_path = utils.unique_file(
+                os.path.join(folder, item['new_name']))
 
             if os.path.join(folder, item['new_name']) == item['archive'].path:
                 print(item['new_name'], "Filename is already good!")

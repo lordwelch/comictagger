@@ -47,7 +47,8 @@ class PageBrowserWindow(QtWidgets.QDialog):
         self.current_page_num = 0
         self.metadata = metadata
 
-        self.buttonBox.button(QtWidgets.QDialogButtonBox.Close).setDefault(True)
+        self.buttonBox.button(
+            QtWidgets.QDialogButtonBox.Close).setDefault(True)
         if platform.system() == "Darwin":
             self.btnPrev.setText("<<")
             self.btnNext.setText(">>")

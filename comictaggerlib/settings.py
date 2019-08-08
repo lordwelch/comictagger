@@ -44,7 +44,7 @@ class ComicTaggerSettings:
     @staticmethod
     def haveOwnUnrarLib():
         return os.path.exists(ComicTaggerSettings.defaultLibunrarPath())
-    
+
     @staticmethod
     def baseDir():
         if getattr(sys, 'frozen', None):
@@ -169,33 +169,35 @@ class ComicTaggerSettings:
             if self.rar_exe_path != "":
                 self.save()
         if self.rar_exe_path != "":
-             # make sure rar program is now in the path for the rar class    
+             # make sure rar program is now in the path for the rar class
             utils.addtopath(os.path.dirname(self.rar_exe_path))
-        
+
         if self.haveOwnUnrarLib():
             # We have a 'personal' copy of the unrar lib in the basedir, so
             # don't search and change the setting
             # NOTE: a manual edit of the settings file overrides this below
             os.environ["UNRAR_LIB_PATH"] = self.defaultLibunrarPath()
-            
+
         elif self.unrar_lib_path == "":
             # Priority is for unrar lib search is:
             #    1. explicit setting in settings file
             #    2. UNRAR_LIB_PATH in environment
             #    3. check some likely platform specific places
             if "UNRAR_LIB_PATH" in os.environ:
-                self.unrar_lib_path =  os.environ["UNRAR_LIB_PATH"]
+                self.unrar_lib_path = os.environ["UNRAR_LIB_PATH"]
             else:
                 # look in some platform specific places:
                 if platform.system() == "Windows":
                     # Default location for the RARLab DLL installer
-                    if (platform.architecture()[0] == '64bit' and 
-                            os.path.exists("C:\\Program Files (x86)\\UnrarDLL\\x64\\UnRAR64.dll")
-                        ):
+                    if (platform.architecture()[0] == '64bit' and
+                            os.path.exists(
+                            "C:\\Program Files (x86)\\UnrarDLL\\x64\\UnRAR64.dll")
+                            ):
                         self.unrar_lib_path = "C:\\Program Files (x86)\\UnrarDLL\\x64\\UnRAR64.dll"
-                    elif (platform.architecture()[0] == '32bit' and 
-                            os.path.exists("C:\\Program Files\\UnrarDLL\\UnRAR.dll")
-                        ):
+                    elif (platform.architecture()[0] == '32bit' and
+                            os.path.exists(
+                                "C:\\Program Files\\UnrarDLL\\UnRAR.dll")
+                          ):
                         self.unrar_lib_path = "C:\\Program Files\\UnrarDLL\\UnRAR.dll"
                 elif platform.system() == "Darwin":
                     # Look for the brew unrar library
@@ -205,14 +207,14 @@ class ComicTaggerSettings:
                     if os.path.exists("/usr/local/lib/libunrar.so"):
                         self.unrar_lib_path = "/usr/local/lib/libunrar.so"
                     elif os.path.exists("/usr/lib/libunrar.so"):
-                        self.unrar_lib_path = "/usr/lib/libunrar.so"                        
-                        
+                        self.unrar_lib_path = "/usr/lib/libunrar.so"
+
             if self.unrar_lib_path != "":
                 self.save()
-                
+
         if self.unrar_lib_path != "":
             # This needs to occur before the unrar module is loaded for the first time
-            os.environ["UNRAR_LIB_PATH"] = self.unrar_lib_path            
+            os.environ["UNRAR_LIB_PATH"] = self.unrar_lib_path
 
     def reset(self):
         os.unlink(self.settings_file)
@@ -317,7 +319,8 @@ class ComicTaggerSettings:
         if self.config.has_option('comicvine', 'cv_api_key'):
             self.cv_api_key = self.config.get('comicvine', 'cv_api_key')
         if self.config.has_option('comicvine', 'autoImprint'):
-            self.autoImprint = self.config.getboolean('comicvine', 'autoImprint')
+            self.autoImprint = self.config.getboolean(
+                'comicvine', 'autoImprint')
 
         if self.config.has_option(
                 'cbl_transform', 'assume_lone_credit_is_primary'):
@@ -366,7 +369,8 @@ class ComicTaggerSettings:
         if self.config.has_option('rename', 'rename_dir'):
             self.rename_dir = self.config.get('rename', 'rename_dir')
         if self.config.has_option('rename', 'rename_move_dir'):
-            self.rename_move_dir = self.config.getboolean('rename', 'rename_move_dir')
+            self.rename_move_dir = self.config.getboolean(
+                'rename', 'rename_move_dir')
 
         if self.config.has_option('autotag', 'save_on_low_confidence'):
             self.save_on_low_confidence = self.config.getboolean(
@@ -530,7 +534,8 @@ class ComicTaggerSettings:
             'rename',
             'rename_use_smart_string_cleanup',
             self.rename_use_smart_string_cleanup)
-        self.config.set('rename', 'rename_extension_based_on_archive', self.rename_extension_based_on_archive)
+        self.config.set('rename', 'rename_extension_based_on_archive',
+                        self.rename_extension_based_on_archive)
         self.config.set('rename', 'rename_dir', self.rename_dir)
         self.config.set('rename', 'rename_move_dir', self.rename_move_dir)
 
@@ -557,6 +562,7 @@ class ComicTaggerSettings:
 
         with codecs.open(self.settings_file, 'wb', 'utf8') as configfile:
             self.config.write(configfile)
+
 
 # make sure the basedir is cached, in case we're on Windows running a
 # script from frozen binary

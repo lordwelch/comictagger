@@ -55,7 +55,7 @@ def get_recursive_filelist(pathlist):
         # if path is a folder, walk it recursively, and all files underneath
         if isinstance(p, str):
             # make sure string is unicode
-            #p = p.decode(filename_encoding)  # , 'replace')
+            # p = p.decode(filename_encoding)  # , 'replace')
             pass
         elif not isinstance(p, str):
             # it's probably a QString

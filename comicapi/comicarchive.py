@@ -51,10 +51,11 @@ try:
             ctypes.c_long
         )
         RARSetCallback = unrarlib._c_func(unrarlib.RARSetCallback, None,
-                         [unrarlib.HANDLE, unrarlib.UNRARCALLBACK, ctypes.c_long])
+                                          [unrarlib.HANDLE, unrarlib.UNRARCALLBACK, ctypes.c_long])
+
         def _rar_cb(self, msg, user_data, p1, p2):
             if (msg == constants.UCM_NEEDPASSWORD or
-                msg == constants.UCM_NEEDPASSWORDW):
+                    msg == constants.UCM_NEEDPASSWORDW):
                 # This is a work around since libunrar doesn't
                 # properly return the error code when files are encrypted
                 self._missing_password = True
@@ -70,7 +71,7 @@ except Exception as e:
     print("WARNING: cannot find libunrar, rar support is disabled")
     pass
 
-#if platform.system() == "Windows":
+# if platform.system() == "Windows":
 #    import _subprocess
 
 try:
@@ -88,6 +89,7 @@ from .filenameparser import FileNameParser
 
 
 sys.path.insert(0, os.path.abspath("."))
+
 
 class MetaDataStyle:
     CBI = 0
@@ -122,7 +124,8 @@ class ZipArchiver:
         try:
             data = zf.read(archive_file)
         except zipfile.BadZipfile as e:
-            print("bad zipfile [{0}]: {1} :: {2}".format(e, self.path, archive_file), file=sys.stderr)
+            print("bad zipfile [{0}]: {1} :: {2}".format(
+                e, self.path, archive_file), file=sys.stderr)
             zf.close()
             raise IOError
         except Exception as e:
@@ -291,7 +294,7 @@ class ZipArchiver:
             return True
 
 
-#------------------------------------------
+# ------------------------------------------
 
 class RarArchiver:
 
@@ -334,11 +337,11 @@ class RarArchiver:
 
                 # use external program to write comment to Rar archive
                 proc_args = [self.rar_exe_path,
-                                 'c',
-                                 '-w' + working_dir,
-                                 '-c-',
-                                 '-z' + tmp_name,
-                                 self.path]
+                             'c',
+                             '-w' + working_dir,
+                             '-c-',
+                             '-z' + tmp_name,
+                             self.path]
                 subprocess.call(proc_args,
                                 startupinfo=self.startupinfo,
                                 stdout=RarArchiver.devnull,
@@ -503,7 +506,7 @@ class RarArchiver:
         while tries < 7:
             try:
                 tries = tries + 1
-                rarc = rarfile.RarFile( self.path )
+                rarc = rarfile.RarFile(self.path)
 
             except (OSError, IOError) as e:
                 print("getRARObj(): [{0}] {1} attempt#{2}".format(
@@ -635,7 +638,7 @@ class PdfArchiver:
             out.append("/%04d.jpg" % (page))
         return out
 
-#------------------------------------------------------------------
+# ------------------------------------------------------------------
 
 
 class ComicArchive:
@@ -829,7 +832,8 @@ class ComicArchive:
             try:
                 image_data = self.archiver.readArchiveFile(filename)
             except IOError:
-                print("Error reading in page.  Substituting logo page.", file=sys.stderr)
+                print("Error reading in page.  Substituting logo page.",
+                      file=sys.stderr)
                 image_data = ComicArchive.logo_data
 
         return image_data
@@ -1148,7 +1152,8 @@ class ComicArchive:
                         data = self.archiver.readArchiveFile(n)
                     except:
                         data = ""
-                        print("Error reading in Comet XML for validation!", file=sys.stderr)
+                        print("Error reading in Comet XML for validation!",
+                              file=sys.stderr)
                     if CoMet().validateString(data):
                         # since we found it, save it!
                         self.comet_filename = n

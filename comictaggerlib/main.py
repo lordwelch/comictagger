@@ -1,3 +1,7 @@
+from .comicvinetalker import ComicVineTalker
+from .options import Options
+from . import cli
+from . import utils
 """A python app to (automatically) tag comic archives"""
 
 # Copyright 2012-2014 Anthony Beville
@@ -32,11 +36,6 @@ except ImportError as e:
     qt_available = False
 
 
-from . import utils
-from . import cli
-from .options import Options
-from .comicvinetalker import ComicVineTalker
-
 def ctmain():
     opts = Options()
     opts.parseCmdLineArgs()
@@ -61,26 +60,27 @@ def ctmain():
     if opts.no_gui:
         cli.cli_mode(opts, SETTINGS)
     else:
-        
+
         os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
-        
-        #if platform.system() == "Darwin":
+
+        # if platform.system() == "Darwin":
         #    QtWidgets.QApplication.setStyle("macintosh")
-        #else:
+        # else:
         #    QtWidgets.QApplication.setStyle("Fusion")
-            
+
         app = QtWidgets.QApplication(sys.argv)
         if platform.system() == "Darwin":
             # Set the MacOS dock icon
             app.setWindowIcon(
-            QtGui.QIcon(ComicTaggerSettings.getGraphic('app.png')))
+                QtGui.QIcon(ComicTaggerSettings.getGraphic('app.png')))
 
         if platform.system() == "Windows":
             # For pure python, tell windows that we're not python,
             # so we can have our own taskbar icon
             import ctypes
-            myappid = u'comictagger' # arbitrary string
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            myappid = u'comictagger'  # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                myappid)
 
         if platform.system() != "Linux":
             img = QtGui.QPixmap(ComicTaggerSettings.getGraphic('tags.png'))

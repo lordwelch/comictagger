@@ -173,7 +173,8 @@ class IssueSelectionWindow(QtWidgets.QDialog):
         if prev is not None and prev.row() == curr.row():
             return
 
-        self.issue_id = self.twList.item(curr.row(), 0).data(QtCore.Qt.UserRole)
+        self.issue_id = self.twList.item(
+            curr.row(), 0).data(QtCore.Qt.UserRole)
 
         # list selection was changed, update the the issue cover
         for record in self.issue_list:

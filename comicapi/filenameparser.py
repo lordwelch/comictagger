@@ -149,7 +149,8 @@ class FileNameParser:
 
     def getVolume(self, filename):
         volume = ""
-        match = re.search('(.+)(([vV]|[Vv][oO][Ll]\.?\s?)(\d+))\s*(.+)', filename)
+        match = re.search(
+            '(.+)(([vV]|[Vv][oO][Ll]\.?\s?)(\d+))\s*(.+)', filename)
 
         if match:
             volume = match.group(2)
@@ -167,7 +168,6 @@ class FileNameParser:
                 volume = match.group(2)
 
         return volume.strip(' \t\r\n.')
-
 
     def getSeriesName(self, filename, issue_start):
         """Use the issue number string index to split the filename string"""
@@ -253,7 +253,7 @@ class FileNameParser:
             remainder = remainder.replace("of " + count, "", 1)
 
         remainder = remainder.replace("()", "")
-        remainder = remainder.replace("  ", " ") # cleans some whitespace mess
+        remainder = remainder.replace("  ", " ")  # cleans some whitespace mess
 
         return remainder.strip()
 

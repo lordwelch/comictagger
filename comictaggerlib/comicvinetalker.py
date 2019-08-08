@@ -15,8 +15,12 @@
 # limitations under the License.
 
 import json
-import urllib.request, urllib.error, urllib.parse
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.error
+import urllib.parse
+import urllib.request
+import urllib.parse
+import urllib.error
 import re
 import time
 import datetime
@@ -228,8 +232,8 @@ class ComicVineTalker(QObject):
 
         # Split and rejoin to remove extra internal spaces
         query_word_list = series_name.split()
-        query_string = " ".join( query_word_list ).strip()
-        print ("Query string = ", query_string)
+        query_string = " ".join(query_word_list).strip()
+        print("Query string = ", query_string)
 
         query_string = urllib.parse.quote_plus(query_string.encode("utf-8"))
 
@@ -361,13 +365,13 @@ class ComicVineTalker(QObject):
         if cached_volume_issues_result is not None:
             return cached_volume_issues_result
 
-        #---------------------------------
+        # ---------------------------------
         issues_url = self.api_base_url + "/issues/" + "?api_key=" + self.api_key + "&filter=volume:" + \
             str(series_id) + \
             "&field_list=id,volume,issue_number,name,image,cover_date,site_detail_url,description&format=json"
         cv_response = self.getCVContent(issues_url)
 
-        #------------------------------------
+        # ------------------------------------
 
         limit = cv_response['limit']
         current_result_count = cv_response['number_of_page_results']
@@ -409,7 +413,8 @@ class ComicVineTalker(QObject):
             year_filter = ",cover_date:{0}-1-1|{1}-1-1".format(
                 year, int(year) + 1)
 
-        issue_number = urllib.parse.quote_plus(str(issue_number).encode("utf-8"))
+        issue_number = urllib.parse.quote_plus(
+            str(issue_number).encode("utf-8"))
 
         filter = "&filter=" + volume_filter + \
             year_filter + ",issue_number:" + issue_number
@@ -419,7 +424,7 @@ class ComicVineTalker(QObject):
 
         cv_response = self.getCVContent(issues_url)
 
-        #------------------------------------
+        # ------------------------------------
 
         limit = cv_response['limit']
         current_result_count = cv_response['number_of_page_results']
@@ -746,13 +751,13 @@ class ComicVineTalker(QObject):
             if 'class' in d.attrs:
                 c = d['class']
                 if ('imgboxart' in c and
-                        'issue-cover' in c and
-                        d.img['src'].startswith("http")
-                   ):
+                            'issue-cover' in c and
+                            d.img['src'].startswith("http")
+                        ):
 
                     covers_found += 1
                     if covers_found != 1:
-                            alt_cover_url_list.append(d.img['src'])
+                        alt_cover_url_list.append(d.img['src'])
 
         return alt_cover_url_list
 
@@ -771,7 +776,7 @@ class ComicVineTalker(QObject):
         cvc = ComicVineCacher()
         cvc.add_alt_covers(issue_id, url_list)
 
-    #-------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     urlFetchComplete = pyqtSignal(str, str, int)
 
     def asyncFetchIssueCoverURLs(self, issue_id):

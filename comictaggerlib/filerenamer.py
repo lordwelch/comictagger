@@ -63,7 +63,7 @@ class FileRenamer:
 
                 # special case for issuecount, remove preceding non-token word,
                 # as in "...(of {issuecount})..."
-                #if token == '{issuecount}':
+                # if token == '{issuecount}':
                 for idx, word in enumerate(text_list):
                     if isToken(word) and text_list[idx - 1].lower() == word[1:-1]:
                         text_list[idx - 1] = ""
@@ -75,8 +75,8 @@ class FileRenamer:
 
     def determineName(self, filename, ext=None):
         class Default(dict):
-             def __missing__(self, key):
-                 return "{" + key + "}"
+            def __missing__(self, key):
+                return "{" + key + "}"
         md = self.metdata
 
         month = int(md.month.strip() or 1)
@@ -97,13 +97,14 @@ class FileRenamer:
 
         template = self.template
         if self.smart_cleanup:
-            template = re.sub("\s+"," ",self.template)
+            template = re.sub("\s+", " ", self.template)
 
         pathComponents = template.split(os.sep)
         new_name = ""
 
         for Component in pathComponents:
-            new_name = os.path.join(new_name, Component.format_map(Default(vars(md))).replace("/", "-"))
+            new_name = os.path.join(new_name, Component.format_map(
+                Default(vars(md))).replace("/", "-"))
 
         if self.smart_cleanup:
 
@@ -122,8 +123,8 @@ class FileRenamer:
             new_name = re.sub("[-#]{1,}\s+\(", "(", new_name)
 
             # remove duplicate spaces
-            new_name = re.sub("\s+"," ",new_name)
-            new_name = re.sub("\s$","",new_name)
+            new_name = re.sub("\s+", " ", new_name)
+            new_name = re.sub("\s$", "", new_name)
 
         if ext is None:
             ext = os.path.splitext(filename)[1]

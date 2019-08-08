@@ -87,11 +87,11 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
     def __init__(self, file_list, settings, parent=None, opts=None):
         super(TaggerWindow, self).__init__(parent)
-        
+
         uic.loadUi(ComicTaggerSettings.getUIFile('taggerwindow.ui'), self)
         self.settings = settings
 
-        #----------------------------------
+        # ----------------------------------
         # prevent multiple instances
         socket = QtNetwork.QLocalSocket(self)
         socket.connectToServer(settings.install_id)
@@ -126,7 +126,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
                             self.socketServer.errorString())))
                     sys.exit()
             #print("Registering as single instance with key [{}]".format(settings.install_id))
-        #----------------------------------
+        # ----------------------------------
 
         self.archiveCoverWidget = CoverImageWidget(
             self.coverImageContainer, CoverImageWidget.ArchiveMode)
@@ -138,7 +138,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
         gridlayout = QtWidgets.QGridLayout(self.tabPages)
         gridlayout.addWidget(self.pageListEditor)
 
-        #---------------------------
+        # ---------------------------
         self.fileSelectionList = FileSelectionList(
             self.widgetListHolder, self.settings)
         gridlayout = QtWidgets.QGridLayout(self.widgetListHolder)
@@ -184,7 +184,8 @@ class TaggerWindow(QtWidgets.QMainWindow):
         self.resetApp()
 
         # set up some basic field validators
-        validator = QtGui.QIntValidator(1900, datetime.date.today().year + 15, self)
+        validator = QtGui.QIntValidator(
+            1900, datetime.date.today().year + 15, self)
         self.lePubYear.setValidator(validator)
 
         self.leSeriesPubYear.setValidator(validator)
@@ -269,7 +270,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
             self.settings.show_disclaimer = not checked
 
         if self.settings.check_for_new_version:
-            #self.checkLatestVersionOnline()
+            # self.checkLatestVersionOnline()
             pass
 
     def sigint_handler(self, *args):
@@ -296,7 +297,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
         self.setWindowIcon(
             QtGui.QIcon(ComicTaggerSettings.getGraphic('app.png')))
-        
+
         if self.comic_archive is None:
             self.setWindowTitle(self.appName)
         else:
@@ -598,21 +599,21 @@ class TaggerWindow(QtWidgets.QMainWindow):
             CF.kCFAllocatorDefault,
             localFileQString.toUtf8(),
             CF.kCFStringEncodingUTF8
-            )
+        )
         relCFURL = CF.CFURLCreateWithFileSystemPath(
             CF.kCFAllocatorDefault,
             relCFStringRef,
             CF.kCFURLPOSIXPathStyle,
             False  # is directory
-            )
+        )
         absCFURL = CF.CFURLCreateFilePathURL(
             CF.kCFAllocatorDefault,
             relCFURL,
             objc.NULL
-            )
+        )
 
         local = QUrl(str(absCFURL[0])).toLocalFile()
-        
+
         return local
 
     def dropEvent(self, event):
@@ -936,12 +937,15 @@ class TaggerWindow(QtWidgets.QMainWindow):
             self.metadata.issue = "0"
         else:
             self.metadata.issue = self.metadata.issue.lstrip("0")
-        self.metadata.issueCount = xlate(self.leIssueCount.text().lstrip("0"), "int")
+        self.metadata.issueCount = xlate(
+            self.leIssueCount.text().lstrip("0"), "int")
         self.metadata.volume = xlate(self.leVolumeNum.text(), "int")
-        self.metadata.volumeCount = xlate(self.leVolumeCount.text().lstrip("0"), "int")
+        self.metadata.volumeCount = xlate(
+            self.leVolumeCount.text().lstrip("0"), "int")
         self.metadata.title = xlate(self.leTitle.text(), "str")
         self.metadata.publisher = xlate(self.lePublisher.text(), "str")
-        self.metadata.seriesYear = xlate(self.leSeriesPubYear.text().lstrip("0"), "int")
+        self.metadata.seriesYear = xlate(
+            self.leSeriesPubYear.text().lstrip("0"), "int")
         self.metadata.month = xlate(self.lePubMonth.text().lstrip("0"), "int")
         self.metadata.year = xlate(self.lePubYear.text().lstrip("0"), "int")
         self.metadata.day = xlate(self.lePubDay.text().lstrip("0"), "int")
@@ -949,17 +953,21 @@ class TaggerWindow(QtWidgets.QMainWindow):
         self.metadata.imprint = xlate(self.leImprint.text(), "str")
         self.metadata.comments = xlate(self.teComments.toPlainText(), "str")
         self.metadata.notes = xlate(self.teNotes.toPlainText(), "str")
-        self.metadata.criticalRating = xlate(self.leCriticalRating.text(), "int")
-        self.metadata.maturityRating = xlate(self.cbMaturityRating.currentText(), "str")
+        self.metadata.criticalRating = xlate(
+            self.leCriticalRating.text(), "int")
+        self.metadata.maturityRating = xlate(
+            self.cbMaturityRating.currentText(), "str")
 
         self.metadata.storyArc = xlate(self.leStoryArc.text(), "str")
         self.metadata.scanInfo = xlate(self.leScanInfo.text(), "str")
         self.metadata.seriesGroup = xlate(self.leSeriesGroup.text(), "str")
         self.metadata.alternateSeries = xlate(self.leAltSeries.text(), "str")
         self.metadata.alternateNumber = xlate(self.leAltIssueNum.text(), "int")
-        self.metadata.alternateCount = xlate(self.leAltIssueCount.text(), "int")
+        self.metadata.alternateCount = xlate(
+            self.leAltIssueCount.text(), "int")
         self.metadata.webLink = xlate(self.leWebLink.text(), "str")
-        self.metadata.characters = xlate(self.teCharacters.toPlainText(), "str")
+        self.metadata.characters = xlate(
+            self.teCharacters.toPlainText(), "str")
         self.metadata.teams = xlate(self.teTeams.toPlainText(), "str")
         self.metadata.locations = xlate(self.teLocations.toPlainText(), "str")
 
@@ -1206,11 +1214,11 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
     def updateCreditColors(self):
         #!!!ATB qt5 porting TODO
-        #return 
+        # return
         inactive_color = QtGui.QColor(255, 170, 150)
         active_palette = self.leSeries.palette()
         active_color = active_palette.color(QtGui.QPalette.Base)
-        
+
         inactive_brush = QtGui.QBrush(inactive_color)
         active_brush = QtGui.QBrush(active_color)
 
@@ -1593,7 +1601,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
                 progdialog.setMinimumDuration(300)
                 centerWindowOnParent(progdialog)
                 QtCore.QCoreApplication.processEvents()
-                #progdialog.show()
+                # progdialog.show()
 
                 prog_idx = 0
 
@@ -2062,7 +2070,8 @@ class TaggerWindow(QtWidgets.QMainWindow):
         webbrowser.open("https://github.com/davide-romanini/comictagger/wiki")
 
     def reportBug(self):
-        webbrowser.open("https://github.com/davide-romanini/comictagger/issues")
+        webbrowser.open(
+            "https://github.com/davide-romanini/comictagger/issues")
 
     def showForum(self):
         webbrowser.open("http://comictagger.forumotion.com/")
@@ -2099,7 +2108,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
                 self.loadArchive(self.comic_archive)
 
     def fileListSelectionChanged(self, qvarFI):
-        fi = qvarFI #.toPyObject()
+        fi = qvarFI  # .toPyObject()
         self.loadArchive(fi.ca)
 
     def loadArchive(self, comic_archive):
@@ -2151,7 +2160,8 @@ class TaggerWindow(QtWidgets.QMainWindow):
                 "New version ({0}) available!<br>(You are currently running {1})<br><br>".format(
                     new_version,
                     self.version) +
-                "Visit <a href='{0}'>{0}</a> for more info.<br><br>".format(website),
+                "Visit <a href='{0}'>{0}</a> for more info.<br><br>".format(
+                    website),
                 QtCore.Qt.Unchecked,
                 "Don't tell me about this version again")
             if checked:

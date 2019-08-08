@@ -129,7 +129,7 @@ class PageListEditor(QWidget):
 
     def getNewIndexes(self, movement):
         selection = self.listWidget.selectionModel().selectedRows()
-        selection.sort(reverse=movement>0)
+        selection.sort(reverse=movement > 0)
         current = 0
         newindexes = []
         oldindexes = []
@@ -155,17 +155,18 @@ class PageListEditor(QWidget):
                 continue
 
             if selection != indexes[i-1][0]+1:
-                selectionRanges.append((first,indexes[i-1][0]))
+                selectionRanges.append((first, indexes[i-1][0]))
                 first = selection[0]
 
         selectionRanges.append((first, indexes[-1][0]))
         selection = QItemSelection()
         for x in selectionRanges:
-            selection.merge(QItemSelection(self.listWidget.model().index(x[0], 0), self.listWidget.model().index(x[1], 0)), QItemSelectionModel.Select)
+            selection.merge(QItemSelection(self.listWidget.model().index(
+                x[0], 0), self.listWidget.model().index(x[1], 0)), QItemSelectionModel.Select)
 
-        self.listWidget.selectionModel().select(selection, QItemSelectionModel.ClearAndSelect)
+        self.listWidget.selectionModel().select(
+            selection, QItemSelectionModel.ClearAndSelect)
         return selectionRanges
-
 
     def moveCurrentUp(self):
         row = self.listWidget.currentRow()
@@ -180,7 +181,6 @@ class PageListEditor(QWidget):
         self.listOrderChanged.emit()
         self.emitFrontCoverChange()
         self.modified.emit()
-
 
     def moveCurrentDown(self):
         row = self.listWidget.currentRow()
@@ -208,7 +208,7 @@ class PageListEditor(QWidget):
                 self.modified.emit()
 
     def changePageType(self, i):
-        new_type = self.comboBox.itemData(i).toString()
+        new_type = self.comboBox.itemData(i)  # .toString()
         if self.getCurrentPageType() != new_type:
             self.setCurrentPageType(new_type)
             self.emitFrontCoverChange()
@@ -232,7 +232,7 @@ class PageListEditor(QWidget):
         frontCover = 0
         for i in range(self.listWidget.count()):
             item = self.listWidget.item(i)
-            page_dict = item.data(Qt.UserRole)[0] #.toPyObject()[0]
+            page_dict = item.data(Qt.UserRole)[0]  # .toPyObject()[0]
             if 'Type' in page_dict and page_dict[
                     'Type'] == PageType.FrontCover:
                 frontCover = int(page_dict['Image'])
@@ -241,7 +241,8 @@ class PageListEditor(QWidget):
 
     def getCurrentPageType(self):
         row = self.listWidget.currentRow()
-        page_dict = self.listWidget.item(row).data(Qt.UserRole)[0] #.toPyObject()[0]
+        page_dict = self.listWidget.item(row).data(Qt.UserRole)[
+            0]  # .toPyObject()[0]
         if 'Type' in page_dict:
             return page_dict['Type']
         else:
@@ -249,7 +250,8 @@ class PageListEditor(QWidget):
 
     def setCurrentPageType(self, t):
         row = self.listWidget.currentRow()
-        page_dict = self.listWidget.item(row).data(Qt.UserRole)[0] #.toPyObject()[0]
+        page_dict = self.listWidget.item(row).data(Qt.UserRole)[
+            0]  # .toPyObject()[0]
 
         if t == "":
             if 'Type' in page_dict:
@@ -291,7 +293,7 @@ class PageListEditor(QWidget):
         page_list = []
         for i in range(self.listWidget.count()):
             item = self.listWidget.item(i)
-            page_list.append(item.data(Qt.UserRole)[0]) #.toPyObject()[0]
+            page_list.append(item.data(Qt.UserRole)[0])  # .toPyObject()[0]
         return page_list
 
     def emitFrontCoverChange(self):

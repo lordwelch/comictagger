@@ -37,7 +37,7 @@ class ComicVineCacher:
         data = ""
         try:
             with open(self.version_file, 'rb') as f:
-                data = f.read().decode("utf-8") 
+                data = f.read().decode("utf-8")
                 f.close()
         except:
             pass
