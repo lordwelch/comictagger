@@ -126,7 +126,7 @@ class IssueString:
     def asFloat(self):
         # return the float, with no suffix
         if self.suffix == "½":
-            if self.num is not None:
+            if self.num is not None and self.num is not "":
                 return self.num + .5
             else:
                 return .5

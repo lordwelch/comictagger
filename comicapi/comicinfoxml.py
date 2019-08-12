@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 #import zipfile
 
 from .genericmetadata import GenericMetadata
+from .issuestring import IssueString
 from . import utils
 
 
@@ -90,24 +91,20 @@ class ComicInfoXml:
 
         assign('Title', md.title)
         assign('Series', md.series)
-        if md.issue == 0 or md.issue == "0":
-            md.issue = "0"
-        else:
-            md.issue = md.issue.lstrip("0")
-        assign('Number', md.issue)
-        assign('Count', md.issueCount.lstrip("0"))
-        assign('Volume', md.volume)
+        assign('Number', IssueString(md.issue).asString())
+        assign('Count', utils.xlate(md.issueCount, True))
+        assign('Volume', utils.xlate(md.volume, True))
         assign('AlternateSeries', md.alternateSeries)
-        assign('AlternateNumber', md.alternateNumber.lstrip("0"))
+        assign('AlternateNumber', IssueString(md.alternateNumber).asString())
         assign('StoryArc', md.storyArc)
         assign('SeriesGroup', md.seriesGroup)
         assign('AlternateCount', md.alternateCount.lstrip("0"))
         assign('Summary', md.comments)
         assign('Notes', md.notes)
-        assign('Year', md.year.lstrip("0"))
-        assign('SeriesYear', md.seriesYear.lstrip("0"))
-        assign('Month', md.month.lstrip("0"))
-        assign('Day', md.day.lstrip("0"))
+        assign('Year', utils.xlate(md.year, True))
+        assign('SeriesYear', utils.xlate(md.seriesYear, True))
+        assign('Month', utils.xlate(md.month, True))
+        assign('Day', utils.xlate(md.day, True))
 
         # need to specially process the credits, since they are structured
         # differently than CIX
@@ -211,51 +208,45 @@ class ComicInfoXml:
             raise 1
             return None
 
+        def get(name):
+            tag = root.find(name)
+            if tag is None:
+                return ""
+            return tag.text
+
         metadata = GenericMetadata()
 
-        # Helper function
-        def xlate(tag):
-            node = root.find(tag)
-            if node is not None:
-                return (node.text or "")
-            else:
-                return ""
+        metadata.series = utils.xlate(get('Series'))
+        metadata.title = utils.xlate(get('Title'))
+        metadata.issue = IssueString(utils.xlate(get('Number'))).asString()
+        metadata.issueCount = utils.xlate(get('Count'), True)
+        metadata.volume = utils.xlate(get('Volume'), True)
+        metadata.alternateSeries = utils.xlate(get('AlternateSeries'))
+        metadata.alternateNumber = IssueString(utils.xlate(get('AlternateNumber'))).asString()
+        metadata.alternateCount = utils.xlate(get('AlternateCount'), True)
+        metadata.comments = utils.xlate(get('Summary'))
+        metadata.notes = utils.xlate(get('Notes'))
+        metadata.year = utils.xlate(get('Year'), True)
+        metadata.seriesYear = utils.xlate(get('SeriesYear'), True)
+        metadata.month = utils.xlate(get('Month'), True)
+        metadata.day = utils.xlate(get('Day'), True)
+        metadata.publisher = utils.xlate(get('Publisher'))
+        metadata.imprint = utils.xlate(get('Imprint'))
+        metadata.genre = utils.xlate(get('Genre'))
+        metadata.webLink = utils.xlate(get('Web'))
+        metadata.language = utils.xlate(get('LanguageISO'))
+        metadata.format = utils.xlate(get('Format'))
+        metadata.manga = utils.xlate(get('Manga'))
+        metadata.characters = utils.xlate(get('Characters'))
+        metadata.teams = utils.xlate(get('Teams'))
+        metadata.locations = utils.xlate(get('Locations'))
+        metadata.pageCount = utils.xlate(get('PageCount'))
+        metadata.scanInfo = utils.xlate(get('ScanInformation'))
+        metadata.storyArc = utils.xlate(get('StoryArc'))
+        metadata.seriesGroup = utils.xlate(get('SeriesGroup'))
+        metadata.maturityRating = utils.xlate(get('AgeRating'))
 
-        metadata.series = xlate('Series')
-        metadata.title = xlate('Title')
-        metadata.issue = xlate('Number')
-        if metadata.issue == 0 or metadata.issue == "0":
-            metadata.issue = "0"
-        else:
-            metadata.issue = metadata.issue.lstrip("0")
-        metadata.issueCount = xlate('Count').lstrip("0")
-        metadata.volume = xlate('Volume')
-        metadata.alternateSeries = xlate('AlternateSeries')
-        metadata.alternateNumber = xlate('AlternateNumber').lstrip("0")
-        metadata.alternateCount = xlate('AlternateCount').lstrip("0")
-        metadata.comments = xlate('Summary')
-        metadata.notes = xlate('Notes')
-        metadata.year = xlate('Year').lstrip("0")
-        metadata.seriesYear = xlate('SeriesYear').lstrip("0")
-        metadata.month = xlate('Month').lstrip("0")
-        metadata.day = xlate('Day').lstrip("0")
-        metadata.publisher = xlate('Publisher')
-        metadata.imprint = xlate('Imprint')
-        metadata.genre = xlate('Genre')
-        metadata.webLink = xlate('Web')
-        metadata.language = xlate('LanguageISO')
-        metadata.format = xlate('Format')
-        metadata.manga = xlate('Manga')
-        metadata.characters = xlate('Characters')
-        metadata.teams = xlate('Teams')
-        metadata.locations = xlate('Locations')
-        metadata.pageCount = xlate('PageCount')
-        metadata.scanInfo = xlate('ScanInformation')
-        metadata.storyArc = xlate('StoryArc')
-        metadata.seriesGroup = xlate('SeriesGroup')
-        metadata.maturityRating = xlate('AgeRating')
-
-        tmp = xlate('BlackAndWhite')
+        tmp = utils.xlate(get('BlackAndWhite'))
         metadata.blackAndWhite = False
         if tmp is not None and tmp.lower() in ["yes", "true", "1"]:
             metadata.blackAndWhite = True

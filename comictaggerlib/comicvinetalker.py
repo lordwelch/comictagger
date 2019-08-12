@@ -498,33 +498,27 @@ class ComicVineTalker(QObject):
         return md
 
     def mapCVDataToMetadata(self, volume_results, issue_results, settings):
-
         # Now, map the Comic Vine data to generic metadata
         metadata = GenericMetadata()
 
-        metadata.series = issue_results['volume']['name']
-
-        num_s = IssueString(issue_results['issue_number']).asString()
-        metadata.issue = str(num_s or "")
-        metadata.title = issue_results['name'] or ""
+        metadata.series = utils.xlate(issue_results['volume']['name'])
+        metadata.issue = utils.xlate(IssueString(issue_results['issue_number']).asString())
+        metadata.title = utils.xlate(issue_results['name'])
 
         if volume_results['publisher'] is not None:
-            metadata.publisher = volume_results['publisher']['name'] or ""
-        metadata.day, metadata.month, metadata.year = self.parseDateStr(
-            issue_results['cover_date'])
+            metadata.publisher = utils.xlate(volume_results['publisher']['name'])
+        metadata.day, metadata.month, metadata.year = self.parseDateStr(issue_results['cover_date'])
 
-        metadata.seriesYear = str(volume_results['start_year'] or "")
-        metadata.issueCount = str(volume_results['count_of_issues'] or "")
-        metadata.comments = self.cleanup_html(
-            issue_results['description'], settings.remove_html_tables)
+        metadata.seriesYear = utils.xlate(volume_results['start_year'])
+        metadata.issueCount = utils.xlate(volume_results['count_of_issues'])
+        metadata.comments = self.cleanup_html(issue_results['description'], settings.remove_html_tables)
         if settings.use_series_start_as_volume:
-            metadata.volume = str(volume_results['start_year'] or "")
+            metadata.volume = utils.xlate(volume_results['start_year'])
 
         metadata.notes = "Tagged with ComicTagger {0} using info from Comic Vine on {1}.  [Issue ID {2}]".format(
             ctversion.version,
             datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             issue_results['id'])
-        #metadata.notes  += issue_results['site_detail_url']
 
         metadata.webLink = issue_results['site_detail_url']
 
