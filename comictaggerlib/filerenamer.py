@@ -17,6 +17,9 @@
 import os
 import re
 import datetime
+import sys
+
+from pathvalidate import sanitize_filepath
 
 from . import utils
 from .issuestring import IssueString
@@ -27,9 +30,10 @@ class FileRenamer:
     def __init__(self, metadata):
         self.setMetadata(metadata)
         self.setTemplate(
-            "%series% v%volume% #%issue% (of %issuecount%) (%year%)")
+            "{publisher}/{series} {seriesYear}/{series} #{issue} - {title} ({year})")
         self.smart_cleanup = True
         self.issue_zero_padding = 3
+        self.move = False
 
     def setMetadata(self, metadata):
         self.metdata = metadata
@@ -46,23 +50,23 @@ class FileRenamer:
     def replaceToken(self, text, value, token):
         # helper func
         def isToken(word):
-            return (word[0] == "%" and word[-1:] == "%")
+            return (word[0] == "{" and word[-1:] == "{")
 
         if value is not None:
             return text.replace(token, str(value))
         else:
             if self.smart_cleanup:
                 # smart cleanup means we want to remove anything appended to token if it's empty
-                # (e.g "#%issue%"  or "v%volume%")
+                # (e.g "#{issue}"  or "v{volume}")
                 # (TODO: This could fail if there is more than one token appended together, I guess)
                 text_list = text.split()
 
                 # special case for issuecount, remove preceding non-token word,
-                # as in "...(of %issuecount%)..."
-                if token == '%issuecount%':
-                    for idx, word in enumerate(text_list):
-                        if token in word and not isToken(text_list[idx - 1]):
-                            text_list[idx - 1] = ""
+                # as in "...(of {issuecount})..."
+                #if token == '{issuecount}':
+                for idx, word in enumerate(text_list):
+                    if isToken(word) and text_list[idx - 1].lower() == word[1:-1]:
+                        text_list[idx - 1] = ""
 
                 text_list = [x for x in text_list if token not in x]
                 return " ".join(text_list)
@@ -70,76 +74,56 @@ class FileRenamer:
                 return text.replace(token, "")
 
     def determineName(self, filename, ext=None):
-
+        class Default(dict):
+             def __missing__(self, key):
+                 return "{" + key + "}"
         md = self.metdata
-        new_name = self.template
-        preferred_encoding = utils.get_actual_preferred_encoding()
 
-        # print(u"{0}".format(md))
+        month = int(md.month.strip() or 1)
+        day = int(md.day.strip() or 1)
+        year = int(md.year.strip() or 1)
+        if day < 1:
+            day = 1
+        if month < 1:
+            month = 1
+        md.date = datetime.date(int(year), int(month), int(day))
 
-        new_name = self.replaceToken(new_name, md.series, '%series%')
-        new_name = self.replaceToken(new_name, md.volume, '%volume%')
+        # padding for issue
+        md.issue = IssueString(md.issue).asString(pad=self.issue_zero_padding)
 
-        if md.issue is not None:
-            issue_str = "{0}".format(
-                IssueString(md.issue).asString(pad=self.issue_zero_padding))
-        else:
-            issue_str = None
-        new_name = self.replaceToken(new_name, issue_str, '%issue%')
+        # datetemplates = re.findall('\{date:.*?\}',self.template)
+        # for template in datetemplates:
+        #     self.template = re.sub("(\s+%[HIpMSfzZ](})$|(\s+)%[HIpMSfzZ] )", "\\2\\3")
 
-        new_name = self.replaceToken(new_name, md.issueCount, '%issuecount%')
-        new_name = self.replaceToken(new_name, md.year, '%year%')
-        new_name = self.replaceToken(new_name, md.publisher, '%publisher%')
-        new_name = self.replaceToken(new_name, md.title, '%title%')
-        new_name = self.replaceToken(new_name, md.month, '%month%')
-        month_name = None
-        if md.month is not None:
-            if (isinstance(md.month, str) and md.month.isdigit()) or isinstance(
-                    md.month, int):
-                if int(md.month) in range(1, 13):
-                    dt = datetime.datetime(1970, int(md.month), 1, 0, 0)
-                    #month_name = dt.strftime("%B".encode(preferred_encoding)).decode(preferred_encoding)
-                    month_name = dt.strftime("%B")
-        new_name = self.replaceToken(new_name, month_name, '%month_name%')
+        template = self.template
+        if self.smart_cleanup:
+            template = re.sub("\s+"," ",self.template)
 
-        new_name = self.replaceToken(new_name, md.genre, '%genre%')
-        new_name = self.replaceToken(new_name, md.language, '%language_code%')
-        new_name = self.replaceToken(
-            new_name, md.criticalRating, '%criticalrating%')
-        new_name = self.replaceToken(
-            new_name, md.alternateSeries, '%alternateseries%')
-        new_name = self.replaceToken(
-            new_name, md.alternateNumber, '%alternatenumber%')
-        new_name = self.replaceToken(
-            new_name, md.alternateCount, '%alternatecount%')
-        new_name = self.replaceToken(new_name, md.imprint, '%imprint%')
-        new_name = self.replaceToken(new_name, md.format, '%format%')
-        new_name = self.replaceToken(
-            new_name, md.maturityRating, '%maturityrating%')
-        new_name = self.replaceToken(new_name, md.storyArc, '%storyarc%')
-        new_name = self.replaceToken(new_name, md.seriesGroup, '%seriesgroup%')
-        new_name = self.replaceToken(new_name, md.scanInfo, '%scaninfo%')
+        pathComponents = template.split(os.sep)
+        new_name = ""
+
+        for Component in pathComponents:
+            new_name = os.path.join(new_name, Component.format_map(Default(vars(md))).replace("/", "-"))
 
         if self.smart_cleanup:
 
             # remove empty braces,brackets, parentheses
-            new_name = re.sub("\(\s*[-:]*\s*\)", "", new_name)
-            new_name = re.sub("\[\s*[-:]*\s*\]", "", new_name)
-            new_name = re.sub("\{\s*[-:]*\s*\}", "", new_name)
+            new_name = re.sub("[\(\[\{]\s*[-:]*\s*[\)\]\}]", "", new_name)
 
-            # remove duplicate spaces
-            new_name = " ".join(new_name.split())
+            # remove remove empty volume, issuenumber
 
             # remove remove duplicate -, _,
-            new_name = re.sub("[-_]{2,}\s+", "-- ", new_name)
-            new_name = re.sub("(\s--)+", " --", new_name)
-            new_name = re.sub("(\s-)+", " -", new_name)
+            new_name = re.sub("[-_]{2,}", "-", new_name)
+            new_name = re.sub("(\s+-)+", " -", new_name)
 
             # remove dash or double dash at end of line
-            new_name = re.sub("[-]{1,2}\s*$", "", new_name)
+            new_name = re.sub("[-]{1,}\s*$", "", new_name)
+            new_name = re.sub("[-#]{1,}\s+\(", "(", new_name)
+            new_name = re.sub("[-#]{1,}\s+\(", "(", new_name)
 
-            # remove duplicate spaces (again!)
-            new_name = " ".join(new_name.split())
+            # remove duplicate spaces
+            new_name = re.sub("\s+"," ",new_name)
+            new_name = re.sub("\s$","",new_name)
 
         if ext is None:
             ext = os.path.splitext(filename)[1]
@@ -147,10 +131,12 @@ class FileRenamer:
         new_name += ext
 
         # some tweaks to keep various filesystems happy
-        new_name = new_name.replace("/", "-")
-        new_name = new_name.replace(" :", " -")
         new_name = new_name.replace(": ", " - ")
         new_name = new_name.replace(":", "-")
-        new_name = new_name.replace("?", "")
 
-        return new_name
+        # remove padding
+        md.issue = IssueString(md.issue).asString()
+        if self.move:
+            return sanitize_filepath(new_name.strip())
+        else:
+            return os.path.basename(sanitize_filepath(new_name.strip()))

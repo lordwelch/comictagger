@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>702</width>
-    <height>432</height>
+    <height>455</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="tab">
         <attribute name="title">
@@ -416,8 +416,8 @@
              <rect>
               <x>11</x>
               <y>21</y>
-              <width>251</width>
-              <height>199</height>
+              <width>292</width>
+              <height>213</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_7">
@@ -503,7 +503,7 @@
             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
            </property>
            <item row="1" column="0">
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="lblTemplate">
              <property name="text">
               <string>Template:</string>
              </property>
@@ -512,25 +512,12 @@
            <item row="1" column="1">
             <widget class="QLineEdit" name="leRenameTemplate">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The template for the new filename. Accepts the following variables:&lt;/p&gt;&lt;p&gt;%series%&lt;br/&gt;%issue%&lt;br/&gt;%volume%&lt;br/&gt;%issuecount%&lt;br/&gt;%year%&lt;br/&gt;%month%&lt;br/&gt;%month_name%&lt;br/&gt;%publisher%&lt;br/&gt;%title%&lt;br/&gt;
-%genre%&lt;br/&gt;
-%language_code%&lt;br/&gt;
-%criticalrating%&lt;br/&gt;
-%alternateseries%&lt;br/&gt;
-%alternatenumber%&lt;br/&gt;
-%alternatecount%&lt;br/&gt;
-%imprint%&lt;br/&gt;
-%format%&lt;br/&gt;
-%maturityrating%&lt;br/&gt;
-%storyarc%&lt;br/&gt;
-%seriesgroup%&lt;br/&gt;
-%scaninfo%
-&lt;/p&gt;&lt;p&gt;Examples:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;%series% %issue% (%year%)&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;%series% #%issue% - %title%&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The template for the new filename. Accepts the following variables:&lt;/p&gt;&lt;p&gt;{isEmpty}&lt;/p&gt;&lt;p&gt;{tagOrigin}&lt;/p&gt;&lt;p&gt;{series}&lt;/p&gt;&lt;p&gt;{issue}&lt;/p&gt;&lt;p&gt;{title}&lt;/p&gt;&lt;p&gt;{publisher}&lt;/p&gt;&lt;p&gt;{seriesYear}&lt;/p&gt;&lt;p&gt;{month}&lt;/p&gt;&lt;p&gt;{year}&lt;/p&gt;&lt;p&gt;{day}&lt;/p&gt;&lt;p&gt;{date}&lt;/p&gt;&lt;p&gt;{issueCount}&lt;/p&gt;&lt;p&gt;{volume}&lt;/p&gt;&lt;p&gt;{genre}&lt;/p&gt;&lt;p&gt;{language}&lt;/p&gt;&lt;p&gt;{comments}&lt;/p&gt;&lt;p&gt;{volumeCount}&lt;/p&gt;&lt;p&gt;{criticalRating}&lt;/p&gt;&lt;p&gt;{country}&lt;/p&gt;&lt;p&gt;{alternateSeries}&lt;/p&gt;&lt;p&gt;{alternateNumber}&lt;/p&gt;&lt;p&gt;{alternateCount}&lt;/p&gt;&lt;p&gt;{imprint}&lt;/p&gt;&lt;p&gt;{notes}&lt;/p&gt;&lt;p&gt;{webLink}&lt;/p&gt;&lt;p&gt;{format}&lt;/p&gt;&lt;p&gt;{manga}&lt;/p&gt;&lt;p&gt;{blackAndWhite}&lt;/p&gt;&lt;p&gt;{pageCount}&lt;/p&gt;&lt;p&gt;{maturityRating}&lt;/p&gt;&lt;p&gt;{storyArc}&lt;/p&gt;&lt;p&gt;{seriesGroup}&lt;/p&gt;&lt;p&gt;{scanInfo}&lt;/p&gt;&lt;p&gt;{characters}&lt;/p&gt;&lt;p&gt;{teams}&lt;/p&gt;&lt;p&gt;{locations}&lt;/p&gt;&lt;p&gt;{credits}&lt;/p&gt;&lt;p&gt;{tags}&lt;/p&gt;&lt;p&gt;{pages}&lt;/p&gt;&lt;p&gt;{price}&lt;/p&gt;&lt;p&gt;{isVersionOf}&lt;/p&gt;&lt;p&gt;{rights}&lt;/p&gt;&lt;p&gt;{identifier}&lt;/p&gt;&lt;p&gt;{lastMark}&lt;/p&gt;&lt;p&gt;{coverImage}&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Examples:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;{series} {issue} ({year})&lt;/span&gt;&lt;br/&gt;{&lt;span style=&quot; font-style:italic;&quot;&gt;series} #{issue} - {title}&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="label_6">
+            <widget class="QLabel" name="lblPadding">
              <property name="text">
               <string>Issue # Zero Padding</string>
              </property>
@@ -555,7 +542,24 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="2">
+           <item row="6" column="0">
+            <widget class="QCheckBox" name="cbxMoveFiles">
+             <property name="toolTip">
+              <string>If checked moves files to specified folder</string>
+             </property>
+             <property name="text">
+              <string>Move files when renaming</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="cbxChangeExtension">
+             <property name="text">
+              <string>Change Extension Based On Archive Type</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
             <widget class="QCheckBox" name="cbxSmartCleanup">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;Smart Text Cleanup&amp;quot; &lt;/span&gt;will attempt to clean up the new filename if there are missing fields from the template.  For example, removing empty braces, repeated spaces and dashes, and more.  Experimental feature.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -565,12 +569,15 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QCheckBox" name="cbxChangeExtension">
+           <item row="7" column="0">
+            <widget class="QLabel" name="lblDirectory">
              <property name="text">
-              <string>Change Extension Based On Archive Type</string>
+              <string>Destination Directory:</string>
              </property>
             </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QLineEdit" name="leDirectory"/>
            </item>
           </layout>
          </item>
