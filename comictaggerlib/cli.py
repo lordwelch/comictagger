@@ -523,7 +523,7 @@ def process_file_cli(filename, opts, settings, match_results):
 
         new_abs_path = utils.unique_file(os.path.join(folder, new_name))
 
-        if os.path.join(folder, new_name) == filename:
+        if os.path.join(folder, new_name) == os.path.abspath(filename):
             print(msg_hdr + "Filename is already good!", file=sys.stderr)
             return
 
