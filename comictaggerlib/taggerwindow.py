@@ -25,6 +25,7 @@ import json
 import webbrowser
 import re
 import pickle
+import datetime
 #import signal
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
@@ -87,7 +88,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
     def __init__(self, file_list, settings, parent=None, opts=None):
         super(TaggerWindow, self).__init__(parent)
-        
+
         uic.loadUi(ComicTaggerSettings.getUIFile('taggerwindow.ui'), self)
         self.settings = settings
 
@@ -184,7 +185,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
         self.resetApp()
 
         # set up some basic field validators
-        validator = QtGui.QIntValidator(1900, 2099, self)
+        validator = QtGui.QIntValidator(1900, datetime.date.today().year + 15, self)
         self.lePubYear.setValidator(validator)
 
         validator = QtGui.QIntValidator(1, 12, self)
@@ -294,7 +295,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
         self.setWindowIcon(
             QtGui.QIcon(ComicTaggerSettings.getGraphic('app.png')))
-        
+
         if self.comic_archive is None:
             self.setWindowTitle(self.appName)
         else:
@@ -1164,11 +1165,11 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
     def updateCreditColors(self):
         #!!!ATB qt5 porting TODO
-        #return 
+        #return
         inactive_color = QtGui.QColor(255, 170, 150)
         active_palette = self.leSeries.palette()
         active_color = active_palette.color(QtGui.QPalette.Base)
-        
+
         inactive_brush = QtGui.QBrush(inactive_color)
         active_brush = QtGui.QBrush(active_color)
 

@@ -6,3 +6,4 @@ pillow>=4.3.0
 PyQt5>=5.12.2
 pyinstaller>=3.5
 unrar-cffi==0.1.0a5
+pathvalidate
