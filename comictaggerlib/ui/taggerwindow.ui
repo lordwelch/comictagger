@@ -512,6 +512,16 @@
                         </property>
                        </widget>
                       </item>
+                      <item row="9" column="1">
+                       <widget class="QPushButton" name="btnAutoImprint">
+                        <property name="toolTip">
+                         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checks the publisher against a list of imprints.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                        </property>
+                        <property name="text">
+                         <string>Auto Imprint</string>
+                        </property>
+                       </widget>
+                      </item>
                      </layout>
                     </item>
                     <item>
