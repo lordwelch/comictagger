@@ -77,7 +77,19 @@ class RenameWindow(QtWidgets.QDialog):
                 md = ca.metadataFromFilename(self.settings.parse_scan_info)
             self.renamer.setMetadata(md)
             self.renamer.move = self.settings.rename_move_dir
-            new_name = self.renamer.determineName(ca.path, ext=new_ext)
+
+            try:
+                new_name = self.renamer.determineName(ca.path, ext=new_ext)
+            except Exception as e:
+                QtWidgets.QMessageBox.critical(self, 'Invalid format string!',
+                    'Your rename template is invalid!'
+                    '<br/><br/>{}<br/><br/>'
+                    'Please consult the template help in the '
+                    'settings and the documentation on the format at '
+                    '<a href=\'https://docs.python.org/3/library/string.html#format-string-syntax\'>'
+                    'https://docs.python.org/3/library/string.html#format-string-syntax</a>'.format(e))
+                return
+
 
             row = self.twList.rowCount()
             self.twList.insertRow(row)

@@ -55,7 +55,7 @@
 {criticalRating}&#009;(string)
 {country}&#009;(string)
 {alternateSeries}&#009;(string)
-{alternateinteger}&#009;(string)
+{alternateNumber}&#009;(string)
 {alternateCount}&#009;(integer)
 {imprint}&#009;&#009;(string)
 {notes}&#009;&#009;(string)
@@ -76,8 +76,8 @@
 {pages}&#009;&#009;(list of dict({&apos;Image&apos;: &apos;str(int)&apos;, &apos;Type&apos;: &apos;str&apos;}))
 
 CoMet-only items:
-{price}&#009;&#009;(integer)
-{isVersionOf}&#009;(boolean)
+{price}&#009;&#009;(float)
+{isVersionOf}&#009;(string)
 {rights}&#009;&#009;(string)
 {identifier}&#009;(string)
 {lastMark}&#009;(string)

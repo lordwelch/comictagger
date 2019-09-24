@@ -509,7 +509,14 @@ def process_file_cli(filename, opts, settings, match_results):
         renamer.setSmartCleanup(settings.rename_use_smart_string_cleanup)
         renamer.move = settings.rename_move_dir
 
-        new_name = renamer.determineName(filename, ext=new_ext)
+        try:
+            new_name = renamer.determineName(filename, ext=new_ext)
+        except Exception as e:
+            print(msg_hdr + "Invalid format string!\nYour rename template is invalid!\n\n"
+                "{}\n\nPlease consult the template help in the settings "
+                "and the documentation on the format at "
+                "https://docs.python.org/3/library/string.html#format-string-syntax", file=sys.stderr)
+            return
 
         folder = os.path.dirname(os.path.abspath(filename))
         if settings.rename_move_dir and len(settings.rename_dir.strip()) > 3:
