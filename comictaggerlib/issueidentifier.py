@@ -25,16 +25,12 @@ from .imagehasher import ImageHasher
 from .issuestring import IssueString
 
 try:
-    from PIL import Image
-    from PIL import WebPImagePlugin
+    from PIL import Image, WebPImagePlugin
 
     pil_available = True
 except ImportError:
     pil_available = False
 
-
-# from settings import ComicTaggerSettings
-# from comicvinecacher import ComicVineCacher
 
 
 class IssueIdentifierNetworkError(Exception):

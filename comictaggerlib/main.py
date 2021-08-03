@@ -31,6 +31,7 @@ SETTINGS = ComicTaggerSettings()
 try:
     qt_available = True
     from PyQt5 import QtCore, QtGui, QtWidgets
+
     from .taggerwindow import TaggerWindow
 except ImportError as e:
     qt_available = False

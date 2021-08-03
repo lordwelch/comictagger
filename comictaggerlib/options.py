@@ -20,7 +20,7 @@ import platform
 import sys
 import traceback
 
-from . import ctversion, utils
+from . import _version, utils
 from .comicarchive import MetaDataStyle
 from .genericmetadata import GenericMetadata
 from .versionchecker import VersionChecker
@@ -361,7 +361,7 @@ For more help visit the wiki at: http://code.google.com/p/comictagger/
             if o == "--only-set-cv-key":
                 self.only_set_key = True
             if o == "--version":
-                print("ComicTagger {0}:  Copyright (c) 2012-2014 Anthony Beville".format(ctversion.version))
+                print("ComicTagger {0}:  Copyright (c) 2012-2014 Anthony Beville".format(_version.version))
                 print("Distributed under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)")
                 sys.exit(0)
             if o in ("-t", "--type"):

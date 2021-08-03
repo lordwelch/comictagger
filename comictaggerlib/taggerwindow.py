@@ -32,7 +32,7 @@ from PyQt5.QtCore import QUrl
 
 from comictaggerlib.ui.qtutils import centerWindowOnParent, reduceWidgetFontSize
 
-from . import ctversion, utils
+from . import _version, utils
 from .autotagmatchwindow import AutoTagMatchWindow
 from .autotagprogresswindow import AutoTagProgressWindow
 from .autotagstartwindow import AutoTagStartWindow
@@ -56,12 +56,7 @@ from .renamewindow import RenameWindow
 from .settings import ComicTaggerSettings
 from .settingswindow import SettingsWindow
 from .versionchecker import VersionChecker
-
-# from comicarchive import ComicArchive
-# from pageloader import PageLoader
 from .volumeselectionwindow import VolumeSelectionWindow
-
-# import signal
 
 
 class OnlineMatchResults:
@@ -83,7 +78,7 @@ class MultipleMatch:
 class TaggerWindow(QtWidgets.QMainWindow):
 
     appName = "ComicTagger"
-    version = ctversion.version
+    version = _version.version
 
     def __init__(self, file_list, settings, parent=None, opts=None):
         super(TaggerWindow, self).__init__(parent)
@@ -655,6 +650,8 @@ class TaggerWindow(QtWidgets.QMainWindow):
             self.lblArchiveType.setText("RAR archive")
         elif ca.isFolder():
             self.lblArchiveType.setText("Folder archive")
+        elif ca.isTar():
+            self.lblArchiveType.setText("TAR archive")
         else:
             self.lblArchiveType.setText("")
 
@@ -906,6 +903,7 @@ class TaggerWindow(QtWidgets.QMainWindow):
         # Make a list from the coma delimited tags string
         tmp = self.teTags.toPlainText()
         if tmp is not None:
+
             def striplist(l):
                 return [x.strip() for x in l]
 

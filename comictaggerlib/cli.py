@@ -31,13 +31,6 @@ from .issueidentifier import IssueIdentifier
 from .options import Options
 from .settings import ComicTaggerSettings
 
-# import signal
-# import traceback
-# import time
-# import platform
-# import locale
-# import codecs
-
 filename_encoding = sys.getfilesystemencoding()
 
 
@@ -480,8 +473,7 @@ def process_file_cli(filename, opts, settings, match_results):
             new_name = renamer.determineName(filename, ext=new_ext)
         except Exception as e:
             print(
-                msg_hdr
-                + "Invalid format string!\nYour rename template is invalid!\n\n"
+                msg_hdr + "Invalid format string!\nYour rename template is invalid!\n\n"
                 "{}\n\nPlease consult the template help in the settings "
                 "and the documentation on the format at "
                 "https://docs.python.org/3/library/string.html#format-string-syntax",

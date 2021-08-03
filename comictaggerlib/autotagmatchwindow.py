@@ -24,16 +24,6 @@ from .comicarchive import MetaDataStyle
 from .coverimagewidget import CoverImageWidget
 from .settings import ComicTaggerSettings
 
-# import sys
-
-
-# from PyQt5.QtCore import QUrl, pyqtSignal, QByteArray
-
-
-# from imagefetcher import ImageFetcher
-# from comicvinetalker import ComicVineTalker
-# import utils
-
 
 class AutoTagMatchWindow(QtWidgets.QDialog):
 

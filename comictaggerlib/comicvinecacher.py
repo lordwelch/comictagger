@@ -18,11 +18,8 @@ import datetime
 import os
 import sqlite3 as lite
 
-from . import ctversion, utils
+from . import _version, utils
 from .settings import ComicTaggerSettings
-
-# import sys
-# from pprint import pprint
 
 
 class ComicVineCacher:
@@ -39,7 +36,7 @@ class ComicVineCacher:
                 f.close()
         except:
             pass
-        if data != ctversion.version:
+        if data != _version.version:
             self.clearCache()
 
         if not os.path.exists(self.db_file):
@@ -59,7 +56,7 @@ class ComicVineCacher:
 
         # create the version file
         with open(self.version_file, "w") as f:
-            f.write(ctversion.version)
+            f.write(_version.version)
 
         # this will wipe out any existing version
         open(self.db_file, "w").close()

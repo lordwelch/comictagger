@@ -19,8 +19,7 @@ import sys
 from functools import reduce
 
 try:
-    from PIL import Image
-    from PIL import WebPImagePlugin
+    from PIL import Image, WebPImagePlugin
 
     pil_available = True
 except ImportError:

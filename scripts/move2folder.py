@@ -20,6 +20,7 @@
 import shutil
 
 from comicapi.comicarchive import *
+
 from comictaggerlib.settings import *
 
 # import sys

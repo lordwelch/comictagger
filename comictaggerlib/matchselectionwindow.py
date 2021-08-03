@@ -23,17 +23,6 @@ from comictaggerlib.ui.qtutils import reduceWidgetFontSize
 from .coverimagewidget import CoverImageWidget
 from .settings import ComicTaggerSettings
 
-# import sys
-
-
-# from PyQt5.QtCore import QUrl, pyqtSignal, QByteArray
-
-
-# from imagefetcher import ImageFetcher
-# from comicarchive import MetaDataStyle
-# from comicvinetalker import ComicVineTalker
-# import utils
-
 
 class MatchSelectionWindow(QtWidgets.QDialog):
 

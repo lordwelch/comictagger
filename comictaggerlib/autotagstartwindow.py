@@ -14,15 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import os
-
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 from .settings import ComicTaggerSettings
-
-# from settingswindow import SettingsWindow
-# from filerenamer import FileRenamer
-# import utils
 
 
 class AutoTagStartWindow(QtWidgets.QDialog):

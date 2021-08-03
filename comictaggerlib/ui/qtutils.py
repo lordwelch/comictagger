@@ -58,9 +58,9 @@ if qt_available:
         window.move(hpos + main_window_size.left(), vpos + main_window_size.top())
 
     try:
-        from PIL import Image
-        from PIL import WebPImagePlugin
         import io
+
+        from PIL import Image, WebPImagePlugin
 
         pil_available = True
     except ImportError:

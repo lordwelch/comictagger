@@ -22,13 +22,13 @@ import tempfile
 
 import requests
 
-from . import ctversion
+from . import _version
 from .settings import ComicTaggerSettings
 
 try:
-    from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
-    from PyQt5.QtCore import QUrl, pyqtSignal, QObject, QByteArray
     from PyQt5 import QtGui
+    from PyQt5.QtCore import QByteArray, QObject, QUrl, pyqtSignal
+    from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 except ImportError:
     # No Qt, so define a few dummy QObjects to help us compile
     class QObject:
@@ -86,7 +86,7 @@ class ImageFetcher(QObject):
             if image_data is None:
                 try:
                     print(url)
-                    image_data = requests.get(url, headers={"user-agent": "comictagger/" + ctversion.version}).content
+                    image_data = requests.get(url, headers={"user-agent": "comictagger/" + _version.version}).content
                 except Exception as e:
                     print(e)
                     raise ImageFetcherException("Network Error!")

@@ -1,0 +1,1 @@
+comicapi[CBR] @ git+https://github.com/lordwelch/comicapi

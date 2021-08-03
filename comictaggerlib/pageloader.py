@@ -19,9 +19,6 @@ from PyQt5.QtCore import pyqtSignal
 
 from comictaggerlib.ui.qtutils import getQImageFromData
 
-# from comicarchive import ComicArchive
-# import utils
-
 
 class PageLoader(QtCore.QThread):
 

@@ -20,13 +20,11 @@ import urllib.parse
 
 import requests
 
-from . import ctversion
-
-# import os
+from . import _version
 
 try:
-    from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
-    from PyQt5.QtCore import QUrl, pyqtSignal, QObject, QByteArray
+    from PyQt5.QtCore import QByteArray, QObject, QUrl, pyqtSignal
+    from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
 except ImportError:
     # No Qt, so define a few dummy QObjects to help us compile
     class QObject:
@@ -48,7 +46,7 @@ class VersionChecker(QObject):
         args = ""
         params = dict()
         if use_stats:
-            params = {"uuid": uuid, "version": ctversion.version}
+            params = {"uuid": uuid, "version": _version.version}
             if platform.system() == "Windows":
                 params["platform"] = "win"
             elif platform.system() == "Linux":

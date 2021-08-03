@@ -25,18 +25,14 @@ import unicodedata
 import requests
 from bs4 import BeautifulSoup
 
-from . import ctversion, utils
+from . import _version, utils
 from .comicvinecacher import ComicVineCacher
 from .genericmetadata import GenericMetadata
 from .issuestring import IssueString
 
-# from pprint import pprint
-# import math
-
-
 try:
+    from PyQt5.QtCore import QByteArray, QObject, QUrl, pyqtSignal
     from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
-    from PyQt5.QtCore import QUrl, pyqtSignal, QObject, QByteArray
 except ImportError:
     # No Qt, so define a few dummy QObjects to help us compile
     class QObject:
@@ -133,7 +129,7 @@ class ComicVineTalker(QObject):
         try:
             test_url = self.api_base_url + "/issue/1/?api_key=" + key + "&format=json&field_list=name"
 
-            cv_response = requests.get(test_url, headers={"user-agent": "comictagger/" + ctversion.version}).json()
+            cv_response = requests.get(test_url, headers={"user-agent": "comictagger/" + _version.version}).json()
 
             # Bogus request, but if the key is wrong, you get error 100: "Invalid
             # API Key"
@@ -178,7 +174,7 @@ class ComicVineTalker(QObject):
         # print("---", url)
         for tries in range(3):
             try:
-                resp = requests.get(url, params=params, headers={"user-agent": "comictagger/" + ctversion.version})
+                resp = requests.get(url, params=params, headers={"user-agent": "comictagger/" + _version.version})
                 if resp.status_code == 200:
                     return resp.json()
                 if resp.status_code == 500:
@@ -760,7 +756,7 @@ class ComicVineTalker(QObject):
             return url_list
 
         # scrape the CV issue page URL to get the alternate cover URLs
-        content = requests.get(issue_page_url, headers={"user-agent": "comictagger/" + ctversion.version}).text
+        content = requests.get(issue_page_url, headers={"user-agent": "comictagger/" + _version.version}).text
         alt_cover_url_list = self.parseOutAltCoverUrls(content)
 
         # cache this alt cover URL list

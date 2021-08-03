@@ -14,9 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import sys
-# import os
-# import re
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
@@ -26,13 +23,6 @@ from .comicvinetalker import ComicVineTalker, ComicVineTalkerException
 from .coverimagewidget import CoverImageWidget
 from .issuestring import IssueString
 from .settings import ComicTaggerSettings
-
-# from PyQt5.QtCore import QUrl, pyqtSignal, QByteArray
-# from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
-
-
-# from imagefetcher import ImageFetcher
-# import utils
 
 
 class IssueNumberTableWidgetItem(QtWidgets.QTableWidgetItem):

@@ -18,6 +18,7 @@
 import shutil
 
 import Image
+
 from comictaggerlib.comicarchive import *
 from comictaggerlib.settings import *
 

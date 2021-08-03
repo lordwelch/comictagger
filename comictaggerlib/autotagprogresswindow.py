@@ -14,17 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import sys
-# import os
-
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 from comictaggerlib.ui.qtutils import reduceWidgetFontSize
 
 from .coverimagewidget import CoverImageWidget
 from .settings import ComicTaggerSettings
-
-# import utils
 
 
 class AutoTagProgressWindow(QtWidgets.QDialog):

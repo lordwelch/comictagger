@@ -18,8 +18,6 @@ TODO: This should be re-factored using subclasses!
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import os
-
 from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -32,10 +30,6 @@ from .imagefetcher import ImageFetcher
 from .imagepopup import ImagePopup
 from .pageloader import PageLoader
 from .settings import ComicTaggerSettings
-
-# from genericmetadata import GenericMetadata, PageType
-# from comicarchive import MetaDataStyle
-# import utils
 
 
 def clickable(widget):

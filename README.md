@@ -1,12 +1,11 @@
-A fork from the primary dev branch at https://github.com/davide-romanini/comictagger
+A fork from https://github.com/comictagger/comictagger
 
 Changes:
- - Ported to Python 3
- - Ported to PyQt5
- - Added more application and GUI awareness of the unrar library, and removed references to the old scheme that used the unrar executable.  
- - Got setup.py working again to build sdist packages, suitable (I think) for PyPI. An install from the package will attempt to build unrar library.  It should work on most Linux distros, and was tested on a Mac OSX system with dev tools from homebrew.  If the library doesn't build, the GUI has instructions on where to download the library.
- - Removed/changes obsolete links to old Google code website.
- - Set a environment variable to scale the GUI on 4k displays
+ - switched to rarfile, makes dependencies simpler and I had issues using unrar-cffi with python<6.7
+ - Move to Python requests module, requests is much simpler and fixes all ssl errors.
+ - Moved to using Python format strings and use pathvalidate to handle filenames, supports directory structures
+ - Issue string parsing now strips off (# of #) (e.g. 1 of 45)
+ - Add publisher and imprint handling, currently hardcoded
  
 Notes:
 - I did some testing with the pyinstaller build, and it worked on both platforms.  I did encounter two problems:

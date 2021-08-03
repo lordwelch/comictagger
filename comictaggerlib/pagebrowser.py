@@ -21,9 +21,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from .coverimagewidget import CoverImageWidget
 from .settings import ComicTaggerSettings
 
-# import sys
-# import os
-
 
 class PageBrowserWindow(QtWidgets.QDialog):
     def __init__(self, parent, metadata):

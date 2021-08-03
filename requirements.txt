@@ -4,4 +4,4 @@ natsort
 pathvalidate
 pillow>=4.3.0
 requests
-unrar
+comicapi @ git+https://github.com/lordwelch/comicapi

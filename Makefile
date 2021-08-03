@@ -1,17 +1,20 @@
-VERSION_STR := $(shell python -c 'import comictaggerlib.ctversion; print( comictaggerlib.ctversion.version)')
+VERSION_STR := $(shell python -c 'import comictaggerlib._version; print( comictaggerlib._version.version)')
 
 ifeq ($(OS),Windows_NT)
 	APP_NAME=comictagger.exe
 	FINAL_NAME=ComicTagger-$(VERSION_STR).exe
+	ICON_PATH="windows/app.ico"
 else ifeq ($(shell uname -s),Darwin)
 	APP_NAME=ComicTagger.app
 	FINAL_NAME=ComicTagger-$(VERSION_STR).app
+	ICON_PATH="mac/app.icns"
 else
 	APP_NAME=comictagger
 	FINAL_NAME=ComicTagger-$(VERSION_STR)
+	ICON_PATH="windows/app.ico"
 endif
 
-.PHONY: all clean pydist upload unrar dist
+.PHONY: all clean pydist upload dist
 	
 all: clean dist
 
@@ -24,9 +27,6 @@ clean:
 	rm -rf logdict*.log
 	$(MAKE) -C mac clean   
 	rm -rf build
-	$(MAKE) -C unrar clean
-	rm -f unrar/libunrar.so unrar/libunrar.a unrar/unrar
-	rm -f comictaggerlib/libunrar.so
 	rm -rf comictaggerlib/ui/__pycache__
 
 pydist:
@@ -41,15 +41,6 @@ upload:
 	python setup.py register
 	python setup.py sdist --formats=zip upload
 
-unrar:
-ifeq ($(OS),Windows_NT)
-		# statically compile mingw dependencies
-		# https://stackoverflow.com/questions/18138635/mingw-exe-requires-a-few-gcc-dlls-regardless-of-the-code
-		$(MAKE) -C unrar LDFLAGS='-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive -pthread -static-libgcc -static-libstdc++' lib
-else
-		$(MAKE) -C unrar lib
-endif
-
-dist: unrar
-	pyinstaller -y comictagger.spec
+dist:
+	pyinstaller.exe --name="comictagger" --windowed --add-data 'comictaggerlib/ui/*.ui;ui' --add-data 'comictaggerlib/graphics;graphics' -i windows/app.ico --version-file file_version_info.py comictagger.py
 	mv dist/$(APP_NAME) dist/$(FINAL_NAME)

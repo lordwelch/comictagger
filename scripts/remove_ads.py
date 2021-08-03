@@ -52,9 +52,13 @@ def main():
     # first read in CIX metadata from all files, make a list of candidates
     modify_list = []
     for filename in filelist:
-        print(filename,end='\n')
+        print(filename, end="\n")
 
-        ca = ComicArchive(filename, settings.rar_exe_path, default_image_path="/home/timmy/build/source/comictagger-test/comictaggerlib/graphics/nocover.png")
+        ca = ComicArchive(
+            filename,
+            settings.rar_exe_path,
+            default_image_path="/home/timmy/build/source/comictagger-test/comictaggerlib/graphics/nocover.png",
+        )
         if (ca.isZip or ca.isRar()) and ca.hasMetadata(style):
             md = ca.readMetadata(style)
             if len(md.pages) != 0:

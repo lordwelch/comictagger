@@ -332,9 +332,7 @@ class SettingsWindow(QtWidgets.QDialog):
         QtWidgets.QDialog.accept(self)
 
         if self.priorUnrarLibPath != self.settings.unrar_lib_path:
-            QtWidgets.QMessageBox.information(
-                self, "UnRar Library Change",
-                "ComicTagger will need to be restarted for changes to take effect.")
+            QtWidgets.QMessageBox.information(self, "UnRar Library Change", "ComicTagger will need to be restarted for changes to take effect.")
 
     def selectRar(self):
         self.selectFile(self.leRarExePath, "RAR")

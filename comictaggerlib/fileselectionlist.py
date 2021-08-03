@@ -17,8 +17,6 @@
 
 import os
 import platform
-
-# import os
 import sys
 
 from PyQt5 import uic
@@ -33,9 +31,6 @@ from . import utils
 from .comicarchive import ComicArchive
 from .optionalmsgdialog import OptionalMessageDialog
 from .settings import ComicTaggerSettings
-
-# from comicarchive import MetaDataStyle
-# from genericmetadata import GenericMetadata, PageType
 
 
 class FileTableWidgetItem(QTableWidgetItem):
@@ -199,21 +194,21 @@ class FileSelectionList(QWidget):
         progdialog.hide()
         QCoreApplication.processEvents()
 
-        if (self.settings.show_no_unrar_warning and
-                self.settings.unrar_lib_path == "" and
-                not ComicTaggerSettings.haveOwnUnrarLib()):
+        if self.settings.show_no_unrar_warning and self.settings.unrar_lib_path == "" and not ComicTaggerSettings.haveOwnUnrarLib():
             for f in filelist:
                 ext = os.path.splitext(f)[1].lower()
                 if ext == ".rar" or ext == ".cbr":
-                    checked = OptionalMessageDialog.msg(self, "No UnRAR Ability",
-                                                        """
+                    checked = OptionalMessageDialog.msg(
+                        self,
+                        "No UnRAR Ability",
+                        """
                             It looks like you've tried to open at least one CBR or RAR file.<br><br>
                             In order for ComicTagger to read this kind of file, you will have to configure
                             the location of the unrar library in the settings.  Until then, ComicTagger
                             will not be able read these kind of files. See the "RAR Tools" tab in the
                             settings/preferences for more info.
-                            """
-                                                        )
+                            """,
+                    )
                     self.settings.show_no_unrar_warning = not checked
                     break
 
@@ -223,9 +218,11 @@ class FileSelectionList(QWidget):
             if len(pathlist) == 1 and os.path.isfile(pathlist[0]):
                 ext = os.path.splitext(pathlist[0])[1].lower()
                 if ext == ".rar" or ext == ".cbr" and self.settings.unrar_lib_path == "":
-                    QMessageBox.information(self, self.tr("File Open"), self.tr(
-                     "Selected file seems to be a rar file, "
-                     "and can't be read until the unrar library is configured."))
+                    QMessageBox.information(
+                        self,
+                        self.tr("File Open"),
+                        self.tr("Selected file seems to be a rar file, " "and can't be read until the unrar library is configured."),
+                    )
                 else:
                     QMessageBox.information(self, self.tr("File Open"), self.tr("Selected file doesn't seem to be a comic archive."))
             else:
@@ -335,6 +332,8 @@ class FileSelectionList(QWidget):
             item_text = "ZIP"
         elif fi.ca.isRar():
             item_text = "RAR"
+        elif fi.ca.isTar():
+            item_text = "TAR"
         else:
             item_text = ""
         type_item.setText(item_text)

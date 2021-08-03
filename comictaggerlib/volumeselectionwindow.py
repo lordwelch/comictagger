@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import sys
-# import time
-# import os
-
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtCore import QUrl, pyqtSignal
 
@@ -31,13 +27,6 @@ from .issueselectionwindow import IssueSelectionWindow
 from .matchselectionwindow import MatchSelectionWindow
 from .progresswindow import IDProgressWindow
 from .settings import ComicTaggerSettings
-
-# from PyQt4.QtCore import QObject
-# from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
-
-
-# from imagefetcher import ImageFetcher
-# import utils
 
 
 class SearchThread(QtCore.QThread):
@@ -148,7 +137,7 @@ class VolumeSelectionWindow(QtWidgets.QDialog):
         self.btnAutoSelect.setEnabled(enabled)
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(enabled)
 
-    def requery(self,):
+    def requery(self):
         self.performQuery(refresh=True)
         self.twList.selectRow(0)
 

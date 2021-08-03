@@ -167,7 +167,7 @@ class ComicTaggerSettings:
             if self.rar_exe_path != "":
                 self.save()
         if self.rar_exe_path != "":
-             # make sure rar program is now in the path for the rar class
+            # make sure rar program is now in the path for the rar class
             utils.addtopath(os.path.dirname(self.rar_exe_path))
 
         if self.haveOwnUnrarLib():
@@ -182,18 +182,14 @@ class ComicTaggerSettings:
             #    2. UNRAR_LIB_PATH in environment
             #    3. check some likely platform specific places
             if "UNRAR_LIB_PATH" in os.environ:
-                self.unrar_lib_path =  os.environ["UNRAR_LIB_PATH"]
+                self.unrar_lib_path = os.environ["UNRAR_LIB_PATH"]
             else:
                 # look in some platform specific places:
                 if platform.system() == "Windows":
                     # Default location for the RARLab DLL installer
-                    if (platform.architecture()[0] == '64bit' and
-                            os.path.exists("C:\\Program Files (x86)\\UnrarDLL\\x64\\UnRAR64.dll")
-                        ):
+                    if platform.architecture()[0] == "64bit" and os.path.exists("C:\\Program Files (x86)\\UnrarDLL\\x64\\UnRAR64.dll"):
                         self.unrar_lib_path = "C:\\Program Files (x86)\\UnrarDLL\\x64\\UnRAR64.dll"
-                    elif (platform.architecture()[0] == '32bit' and
-                            os.path.exists("C:\\Program Files\\UnrarDLL\\UnRAR.dll")
-                        ):
+                    elif platform.architecture()[0] == "32bit" and os.path.exists("C:\\Program Files\\UnrarDLL\\UnRAR.dll"):
                         self.unrar_lib_path = "C:\\Program Files\\UnrarDLL\\UnRAR.dll"
                 elif platform.system() == "Darwin":
                     # Look for the brew unrar library
@@ -227,8 +223,8 @@ class ComicTaggerSettings:
         self.config.read_file(readline_generator(codecs.open(self.settings_file, "r", "utf8")))
 
         self.rar_exe_path = self.config.get("settings", "rar_exe_path")
-        if self.config.has_option('settings', 'unrar_lib_path'):
-            self.unrar_lib_path = self.config.get('settings', 'unrar_lib_path')
+        if self.config.has_option("settings", "unrar_lib_path"):
+            self.unrar_lib_path = self.config.get("settings", "unrar_lib_path")
         if self.config.has_option("settings", "check_for_new_version"):
             self.check_for_new_version = self.config.getboolean("settings", "check_for_new_version")
         if self.config.has_option("settings", "send_usage_stats"):
@@ -275,7 +271,7 @@ class ComicTaggerSettings:
             self.dont_notify_about_this_version = self.config.get("dialogflags", "dont_notify_about_this_version")
         if self.config.has_option("dialogflags", "ask_about_usage_stats"):
             self.ask_about_usage_stats = self.config.getboolean("dialogflags", "ask_about_usage_stats")
-        if self.config.has_option('dialogflags', 'show_no_unrar_warning'):
+        if self.config.has_option("dialogflags", "show_no_unrar_warning"):
             self.show_no_unrar_warning = self.config.getboolean("dialogflags", "show_no_unrar_warning")
 
         if self.config.has_option("comicvine", "use_series_start_as_volume"):

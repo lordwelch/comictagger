@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import os
+import sys
 from operator import attrgetter, itemgetter
 
 from PyQt5 import uic
@@ -26,10 +26,6 @@ from .comicarchive import MetaDataStyle
 from .coverimagewidget import CoverImageWidget
 from .genericmetadata import GenericMetadata, PageType
 from .settings import ComicTaggerSettings
-
-import sys
-
-# from pageloader import PageLoader
 
 
 def itemMoveEvents(widget):
