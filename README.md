@@ -13,13 +13,7 @@ ComicTagger is a **multi-platform** app for **writing metadata to digital comics
 ## Features
 
 * Runs on macOS, Microsoft Windows, and Linux systems
-* Get comic information from [Comic Vine](https://comicvine.gamespot.com/)
-* **Automatic issue matching** using advanced image processing techniques
-* **Batch processing** in the GUI for tagging hundreds or more comics at a time
-* Support for **ComicRack** and **ComicBookLover** tagging formats
-* Native full support for **CBZ** digital comics
-* Native read only support for **CBR** digital comics: full support enabled installing additional [rar tools](https://www.rarlab.com/download.htm)
-* Command line interface (CLI) enabling **custom scripting** and **batch operations on large collections**
+
 
 For details, screen-shots, release notes, and more, visit [the Wiki](https://github.com/comictagger/comictagger/wiki)
 
