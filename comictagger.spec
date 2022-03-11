@@ -31,7 +31,7 @@ exe = EXE(pyz,
           # single file setup
           exclude_binaries=False,
           name='comictagger',
-          debug=False,
+          debug=True,
           strip=False,
           upx=True,
           console=enable_console,
