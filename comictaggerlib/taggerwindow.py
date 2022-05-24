@@ -2134,7 +2134,7 @@ Please choose options below, and select OK to Auto-Tag.
             self.setWindowFlags(flags)
             self.show()
 
-    def auto_imprint(self):
+    def auto_imprint(self) -> None:
         self.form_to_metadata()
         self.metadata.fix_publisher()
         self.metadata_to_form()
