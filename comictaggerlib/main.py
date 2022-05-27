@@ -202,7 +202,7 @@ def ctmain() -> None:
             QtWidgets.QApplication.processEvents()
 
         try:
-            tagger_window = TaggerWindow(opts.file_list, SETTINGS, opts=opts)
+            tagger_window = TaggerWindow(opts.files, SETTINGS, opts=opts)
             tagger_window.setWindowIcon(QtGui.QIcon(ComicTaggerSettings.get_graphic("app.png")))
             tagger_window.show()
 

@@ -3,22 +3,26 @@
 
 import argparse
 import hashlib
+import os
 import shutil
 import signal
-from pathlib import Path
+import sys
+import tempfile
+import typing
 from operator import itemgetter
-from typing import Dict, List
+from pathlib import Path
+from typing import Optional
 
 import filetype
-import typing
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
-from comictaggerlib.ui.qtutils import centerWindowOnParent
-
-from comictaggerlib.comicarchive import *
-from comictaggerlib.settings import *
-from comictaggerlib.imagehasher import ImageHasher
+from comicapi import utils
+from comicapi.comicarchive import ComicArchive, MetaDataStyle
+from comicapi.genericmetadata import GenericMetadata
 from comictaggerlib.filerenamer import FileRenamer
+from comictaggerlib.imagehasher import ImageHasher
+from comictaggerlib.settings import ComicTaggerSettings
+from comictaggerlib.ui.qtutils import center_window_on_parent
 
 root = 1 << 31 - 1
 something = 1 << 31 - 1
@@ -36,14 +40,15 @@ class ImageMeta:
 
 class Duplicate:
     """docstring for Duplicate"""
-    imageHashes: Dict[str, ImageMeta]
+
+    imageHashes: dict[str, ImageMeta]
 
     def __init__(self, path, metadata: GenericMetadata, ca: ComicArchive, cover):
         self.path = path
         self.digest = ""
-        self.ca = ca
+        self.ca: ComicArchive = ca
         self.metadata = metadata
-        self.imageHashes = dict()
+        self.imageHashes = {}
         self.duplicateImages = set()
         self.extras = set()
         self.extractedPath = ""
@@ -53,32 +58,35 @@ class Duplicate:
         self.imageCount = 0
         self.cover = cover
         blake2b = hashlib.blake2b(digest_size=16)
-        for f in open(self.path, "rb"):
-            blake2b.update(f)
+
+        with open(self.path, "rb") as f:
+            for line in f:
+                blake2b.update(line)
 
         self.digest = blake2b.hexdigest()
 
     def extract(self, directory):
-        if self.ca.seemsToBeAComicArchive():
+        if self.ca.seems_to_be_a_comic_archive():
             self.extractedPath = directory
-            for filepath in self.ca.archiver.getArchiveFilenameList():
+            for filepath in self.ca.archiver.get_filename_list():
                 filename = os.path.basename(filepath)
                 if filename.lower() in ["comicinfo.xml"]:
                     continue
 
                 self.fileCount += 1
-                archived_file = self.ca.archiver.readArchiveFile(filepath)
+                archived_file = self.ca.archiver.read_file(filepath)
 
                 image_type = filetype.image_match(archived_file)
                 if image_type is not None:
                     self.imageCount += 1
                     file_hash = hashlib.blake2b(archived_file, digest_size=16).hexdigest().upper()
-                    if file_hash in self.imageHashes.keys():
+                    if file_hash in self.imageHashes:
                         self.duplicateImages.add(filename)
                     else:
                         image_hash = ImageHasher(data=archived_file, width=12, height=12).average_hash()
-                        self.imageHashes[file_hash] = ImageMeta(os.path.join(self.extractedPath, filename), file_hash,
-                                                                image_hash, image_type.extension)
+                        self.imageHashes[file_hash] = ImageMeta(
+                            os.path.join(self.extractedPath, filename), file_hash, image_hash, image_type.extension
+                        )
                 else:
                     self.extras.add(filename)
 
@@ -101,8 +109,8 @@ class Duplicate:
 
 
 class Tree(QtCore.QAbstractListModel):
-    def __init__(self, item: List[List[Duplicate]]):
-        super(Tree, self).__init__()
+    def __init__(self, item: list[list[Duplicate]]):
+        super().__init__()
         self.rootItem = item
 
     def rowCount(self, index: QtCore.QModelIndex = ...) -> int:
@@ -122,38 +130,49 @@ class Tree(QtCore.QAbstractListModel):
             return QtCore.QVariant()
 
         f = FileRenamer(self.rootItem[index.row()][0].metadata)
-        f.setTemplate("{series} #{issue} - {title} ({year})")
-        if role == QtCore.Qt.DisplayRole:
-            return f.determineName('')
-        elif role == QtCore.Qt.UserRole:
-            return f.determineName('')
+        f.set_template("{series} #{issue} - {title} ({year})")
+        if role in [QtCore.Qt.DisplayRole, QtCore.Qt.UserRole]:
+            return f.determine_name("")
         return QtCore.QVariant()
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, file_list, style, work_path, parent=None):
+    closed = QtCore.pyqtSignal(list)
+
+    def __init__(self, file_list, style, work_path, settings, parent=None):
         super().__init__(parent)
-        uic.loadUi(ComicTaggerSettings.getUIFile("../../scripts/mainwindow.ui"), self)
+        uic.loadUi(ComicTaggerSettings.get_ui_file("../../comictaggerscripts/mainwindow.ui"), self)
         self.dupes = []
+        self.removed: list[str] = []
         self.firstRun = 0
-        self.dupe_set_list: List[List[Duplicate]] = list()
+        self.dupe_set_list: list[list[Duplicate]] = []
         self.style = style
         if work_path == "":
-            work_path = tempfile.mkdtemp()
-        self.work_path = work_path
+            self.work_path = tempfile.mkdtemp()
+        else:
+            self.work_path = work_path
         self.initFiles = file_list
+        self.settings = settings
         self.dupe_set_qlist.clicked.connect(self.dupe_set_clicked)
         self.dupe_set_qlist.doubleClicked.connect(self.dupe_set_double_clicked)
         self.actionCompare_Comic.triggered.connect(self.compare_action)
 
-    def comic_deleted(self, archive_path):
-        self.update_dupes()
+    def __del__(self):
+        print("fuck this")
+        shutil.rmtree(self.work_path, True)
+
+    def closeEvent(self, event: QtGui.QCloseEvent):
+        self.closed.emit(self.removed)
+        event.accept()
+
+    def comic_deleted(self, archive_path: str):
+        self.removed.append(archive_path)
 
     def update_dupes(self):
         # print("updating duplicates")
-        new_set_list = list()
+        new_set_list = []
         for dupe in self.dupe_set_list:
-            dupe_list = list()
+            dupe_list = []
             for d in dupe:
                 QtCore.QCoreApplication.processEvents()
                 if os.path.exists(d.path):
@@ -165,16 +184,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 new_set_list.append(dupe_list)
             else:
                 dupe_list[0].clean()
-        self.dupe_set_list: List[List[Duplicate]] = new_set_list
+        self.dupe_set_list: list[list[Duplicate]] = new_set_list
         self.dupe_set_qlist.setModel(Tree(self.dupe_set_list))
+        if new_set_list:
+            self.dupe_set_qlist.setSelection(QtCore.QRect(0, 0, 0, 1), QtCore.QItemSelectionModel.ClearAndSelect)
 
-        self.dupe_set_qlist.setSelection(QtCore.QRect(0, 0, 0, 1), QtCore.QItemSelectionModel.ClearAndSelect)
-        self.dupe_set_clicked(self.dupe_set_qlist.model().index(0, 0))
+            self.dupe_set_clicked(self.dupe_set_qlist.model().index(0, 0))
+        else:
+            self.clear_dupe_list()
 
     def compare(self, i):
         if len(self.dupe_set_list) > i:
             dw = DupeWindow(self.dupe_set_list[i], self.work_path, self)
             dw.closed.connect(self.update_dupes)
+            dw.comic_deleted.connect(self.comic_deleted)
             dw.show()
 
     def compare_action(self, b):
@@ -185,25 +208,35 @@ class MainWindow(QtWidgets.QMainWindow):
     def dupe_set_double_clicked(self, index: QtCore.QModelIndex):
         self.compare(index.row())
 
-    def dupe_set_clicked(self, index: QtCore.QModelIndex):
+    def clear_dupe_list(self):
         for f in self.dupe_list.children():
-            f.deleteLater()
-        self.dupe_set_list[index.row()].sort(key=lambda k: k.digest)
-        for i, f in enumerate(self.dupe_set_list[index.row()]):
-            color = "black"
-            if i > 0:
-                if self.dupe_set_list[index.row()][i - 1].digest == f.digest:
-                    color = "green"
-            elif i == 0:
-                if len(self.dupe_set_list[index.row()]) > 1:
-                    if self.dupe_set_list[index.row()][i + 1].digest == f.digest:
+            if isinstance(f, DupeImage):
+                f.deleteLater()
+
+    def dupe_set_clicked(self, index: QtCore.QModelIndex):
+        self.clear_dupe_list()
+        if self.dupe_set_list:
+            self.dupe_set_list[index.row()].sort(key=lambda k: k.digest)
+            for i, f in enumerate(self.dupe_set_list[index.row()]):
+                color = "black"
+                if i > 0:
+                    if self.dupe_set_list[index.row()][i - 1].digest == f.digest:
                         color = "green"
-            ql = DupeImage(duplicate=f, style=f".path {{color: black;}}.hash {{color: {color};}}",
-                           parent=self.dupe_list)
-            ql.deleted.connect(self.update_dupes)
-            ql.setMinimumWidth(300)
-            ql.setMinimumHeight(500)
-            self.dupe_list.layout().addWidget(ql)
+                elif i == 0:
+                    if len(self.dupe_set_list[index.row()]) > 1:
+                        if self.dupe_set_list[index.row()][i + 1].digest == f.digest:
+                            color = "green"
+                ql = DupeImage(
+                    duplicate=f, style=f".path {{color: black;}}.hash {{color: {color};}}", parent=self.dupe_list
+                )
+                ql.deleted.connect(self.update_dupes)
+                ql.deleted.connect(self.comic_deleted)
+                ql.setMinimumWidth(300)
+                ql.setMinimumHeight(500)
+                print(self.dupe_list.layout())
+
+                layout = self.dupe_list.layout()
+                layout.addWidget(ql)
 
     def showEvent(self, event: QtGui.QShowEvent):
         if self.firstRun == 0:
@@ -211,15 +244,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.load_files(self.initFiles)
         if len(self.dupe_set_list) < 1:
-            dialog = QtWidgets.QMessageBox(QtWidgets.QMessageBox.NoIcon, "ComicTagger Duplicate finder",
-                                           "No duplicate comics found", QtWidgets.QMessageBox.Ok, parent=self)
+            dialog = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.NoIcon,
+                "ComicTagger Duplicate finder",
+                "No duplicate comics found",
+                QtWidgets.QMessageBox.Ok,
+                parent=self,
+            )
             dialog.setWindowModality(QtCore.Qt.ApplicationModal)
             qw = QtWidgets.QWidget()
             qw.setFixedWidth(90)
             dialog.layout().addWidget(qw, 3, 2, 1, 3)
             dialog.exec()
-            QtWidgets.QApplication.quit()
-            sys.exit(0)
+            QtCore.QTimer.singleShot(1, self.close)
+            self.close()
         self.dupe_set_qlist.setSelection(QtCore.QRect(0, 0, 0, 1), QtCore.QItemSelectionModel.ClearAndSelect)
         self.dupe_set_clicked(self.dupe_set_qlist.model().index(0, 0))
 
@@ -230,7 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         dialog.setMinimumDuration(300)
         dialog.setMinimumWidth(400)
-        centerWindowOnParent(dialog)
+        center_window_on_parent(dialog)
 
         comic_list = []
         max_name_len = 2
@@ -240,28 +278,31 @@ class MainWindow(QtWidgets.QMainWindow):
                 break
             dialog.setValue(dialog.value() + 1)
             dialog.setLabelText(filename)
-            ca = ComicArchive(path=filename, rar_exe_path=settings.rar_exe_path,
-                              default_image_path=ComicTaggerSettings.getGraphic('nocover.png'))
-            if ca.seemsToBeAComicArchive() and ca.hasMetadata(self.style):
+            ca = ComicArchive(
+                path=filename,
+                rar_exe_path=self.settings.rar_exe_path,
+                default_image_path=ComicTaggerSettings.get_graphic("nocover.png"),
+            )
+            if ca.seems_to_be_a_comic_archive() and ca.has_metadata(self.style):
                 # fmt_str = "{{0:{0}}}".format(max_name_len)
                 # print(fmt_str.format(filename) + "\r", end='', file=sys.stderr)
                 # sys.stderr.flush()
-                md = ca.readMetadata(self.style)
-                cover = ca.getPage(0)
+                md = ca.read_metadata(self.style)
+                cover = ca.get_page(0)
                 comic_list.append((make_key(md), filename, ca, md, cover))
                 # max_name_len = len(filename)
 
         comic_list.sort(key=itemgetter(0), reverse=False)
 
         # look for duplicate blocks
-        dupe_set = list()
+        dupe_set = []
         prev_key = ""
 
         dialog.setWindowTitle("Finding Duplicates")
         dialog.setMaximum(len(comic_list))
         dialog.setValue(dialog.minimum())
 
-        set_list = list()
+        set_list = []
         for new_key, filename, ca, md, cover in comic_list:
             dialog.setValue(dialog.value() + 1)
             QtCore.QCoreApplication.processEvents()
@@ -277,7 +318,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 # only add if the dupe list has 2 or more
                 if len(dupe_set) > 1:
                     set_list.append(dupe_set)
-                dupe_set = list()
+                dupe_set = []
                 dupe_set.append((filename, ca, md, cover))
 
             prev_key = new_key
@@ -287,7 +328,7 @@ class MainWindow(QtWidgets.QMainWindow):
             set_list.append(dupe_set)
 
         for d_set in set_list:
-            new_set = list()
+            new_set = []
             for filename, ca, md, cover in d_set:
                 new_set.append(Duplicate(filename, md, ca, cover))
             self.dupe_set_list.append(new_set)
@@ -300,7 +341,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #     working_dir = os.path.join(self.tmp, "working")
     #     s = False
     #     # while working and len(dupe_set) > 1:
-    #     remaining = list()
+    #     remaining = []
     #     for dupe_set in self.dupe_set_list:
     #         not_deleted = True
     #         if os.path.exists(working_dir):
@@ -332,17 +373,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
 class DupeWindow(QtWidgets.QWidget):
     closed = QtCore.pyqtSignal()
+    comic_deleted = QtCore.pyqtSignal(str)
 
-    def __init__(self, duplicates: List[Duplicate], tmp, parent=None):
+    def __init__(self, duplicates: list[Duplicate], tmp, parent=None):
         super().__init__(parent, QtCore.Qt.Window)
-        uic.loadUi(ComicTaggerSettings.getUIFile("../../scripts/dupe.ui"), self)
+        uic.loadUi(ComicTaggerSettings.get_ui_file("../../comictaggerscripts/dupe.ui"), self)
 
         for f in self.comic1Image.children():
             f.deleteLater()
         for f in self.comic2Image.children():
             f.deleteLater()
         self.deleting = -1
-        self.duplicates = duplicates
+        self.duplicates: list[Duplicate] = duplicates
         self.dupe1 = -1
         self.dupe2 = -1
 
@@ -394,7 +436,7 @@ class DupeWindow(QtWidgets.QWidget):
         self.display_dupe()
 
     def update_dupes(self):
-        dupes: List[Duplicate] = list()
+        dupes: list[Duplicate] = []
         for f in self.duplicates:
             if os.path.exists(f.path):
                 dupes.append(f)
@@ -403,6 +445,7 @@ class DupeWindow(QtWidgets.QWidget):
         self.duplicates = dupes
         if len(self.duplicates) < 2:
             self.close()
+        self.dupeList.clear()
 
         for i, dupe in enumerate(self.duplicates):
             item = QtWidgets.QListWidgetItem()
@@ -418,14 +461,16 @@ class DupeWindow(QtWidgets.QWidget):
 
     def delete_1(self):
         self.duplicates[self.dupe1].delete()
+        self.comic_deleted.emit(self.duplicates[self.dupe1].path)
         self.update_dupes()
 
     def delete_2(self):
         self.duplicates[self.dupe2].delete()
+        self.comic_deleted.emit(self.duplicates[self.dupe2].path)
         self.update_dupes()
 
     def display_dupe(self):
-        for f in range(self.pageList.rowCount()):
+        for _ in range(self.pageList.rowCount()):
             self.pageList.removeRow(0)
         for h in self.duplicates[self.dupe1].imageHashes.values():
             row = self.pageList.rowCount()
@@ -488,39 +533,44 @@ class DupeWindow(QtWidgets.QWidget):
         if image_hash.file_hash == score_hash.file_hash:
             file_color = "green"
         style = f"""
-.page {{
-color: {page_color};
-}}
-.size {{
-color: {size_color};
-}}
-.type {{
-color: {type_color};
-}}
-.file {{
-color: {file_color};
-}}
-.image {{
-color: {image_color};
-}}
-"""
-        text = "name: {{duplicate.path}}<br/>" \
-               "page count: <span class='page'>{len}</span><br/>" \
-               "size/type: <span class='size'>{{width}}x{{height}}</span>/<span class='type'>{meta.type}</span><br/>" \
-               "file_hash: <span class='file'>{meta.file_hash}</span><br/>" \
-               "image_hash: <span class='image'>{meta.image_hash}</span>" \
-            .format(meta=image_hash, style=style, len=len(self.duplicates[self.dupe1].imageHashes))
+            .page {{
+                color: {page_color};
+            }}
+            .size {{
+                color: {size_color};
+            }}
+            .type {{
+                color: {type_color};
+            }}
+            .file {{
+                color: {file_color};
+            }}
+            .image {{
+                color: {image_color};
+            }}"""
+        text = ( # this is a format string that creates a format string
+            "name: {{duplicate.path}}<br/>"
+            "page count: <span class='page'>{len}</span><br/>"
+            "size/type: <span class='size'>{{width}}x{{height}}</span>/<span class='type'>{meta.type}</span><br/>"
+            "file_hash: <span class='file'>{meta.file_hash}</span><br/>"
+            "image_hash: <span class='image'>{meta.image_hash}</span>".format(
+                meta=image_hash, style=style, len=len(self.duplicates[self.dupe1].imageHashes)
+            )
+        )
         self.comic1Image.setDuplicate(self.duplicates[self.dupe1])
         self.comic1Image.setImage(image_hash.name)
         self.comic1Image.setText(text)
         self.comic1Image.setLabelStyle(style)
 
-        text = "name: {{duplicate.path}}<br/>" \
-               "page count: <span class='page'>{len}</span><br/>" \
-               "size/type: <span class='size'>{{width}}x{{height}}</span>/<span class='type'>{score.type}</span><br/>" \
-               "file_hash: <span class='file'>{score.file_hash}</span><br/>" \
-               "image_hash: <span class='image'>{score.image_hash}</span>" \
-            .format(score=score_hash, style=style, len=len(self.duplicates[self.dupe2].imageHashes))
+        text = (
+            "name: {{duplicate.path}}<br/>"
+            "page count: <span class='page'>{len}</span><br/>"
+            "size/type: <span class='size'>{{width}}x{{height}}</span>/<span class='type'>{score.type}</span><br/>"
+            "file_hash: <span class='file'>{score.file_hash}</span><br/>"
+            "image_hash: <span class='image'>{score.image_hash}</span>".format(
+                score=score_hash, style=style, len=len(self.duplicates[self.dupe2].imageHashes)
+            )
+        )
         self.comic2Image.setDuplicate(self.duplicates[self.dupe2])
         self.comic2Image.setImage(score_hash.name)
         self.comic2Image.setText(text)
@@ -539,20 +589,29 @@ class QQlabel(QtWidgets.QLabel):
         self.setMaximumWidth(pixmap.width())
         self.setMaximumHeight(pixmap.height())
         super().setPixmap(
-            self.image.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+            self.image.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        )
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         if self.image is not None:
-            super().setPixmap(self.image.scaled(self.width(), self.height(), QtCore.Qt.KeepAspectRatio,
-                                                QtCore.Qt.SmoothTransformation))
+            super().setPixmap(
+                self.image.scaled(
+                    self.width(), self.height(), QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation
+                )
+            )
 
 
 class DupeImage(QtWidgets.QWidget):
     deleted = QtCore.pyqtSignal(str)
 
-    def __init__(self, duplicate: Duplicate, style=".path {color: black;}.hash {color: black;}",
-                 text="path: <span class='path'>{duplicate.path}</span><br/>hash: <span class='hash'>{duplicate.digest}</span>",
-                 image="cover", parent=None):
+    def __init__(
+        self,
+        duplicate: Duplicate,
+        style=".path {color: black;}.hash {color: black;}",
+        text="path: <span class='path'>{duplicate.path}</span><br/>hash: <span class='hash'>{duplicate.digest}</span>",
+        image="cover",
+        parent=None,
+    ):
         super().__init__(parent)
         self.setLayout(QtWidgets.QVBoxLayout())
         self.image = QQlabel()
@@ -589,14 +648,16 @@ class DupeImage(QtWidgets.QWidget):
         self.duplicate = duplicate
         self.setImage("cover")
         self.label.setText(
-            f"<style>{self.labelStyle}</style>" + self.text.format(duplicate=self.duplicate, width=self.iWidth,
-                                                                   height=self.iHeight))
+            f"<style>{self.labelStyle}</style>"
+            + self.text.format(duplicate=self.duplicate, width=self.iWidth, height=self.iHeight)
+        )
 
     def setText(self, text):
         self.text = text
         self.label.setText(
-            f"<style>{self.labelStyle}</style>" + self.text.format(duplicate=self.duplicate, width=self.iWidth,
-                                                                   height=self.iHeight))
+            f"<style>{self.labelStyle}</style>"
+            + self.text.format(duplicate=self.duplicate, width=self.iWidth, height=self.iHeight)
+        )
 
     def setImage(self, image):
         if self.duplicate is not None:
@@ -612,8 +673,9 @@ class DupeImage(QtWidgets.QWidget):
     def setLabelStyle(self, style):
         self.labelStyle = style
         self.label.setText(
-            f"<style>{self.labelStyle}</style>" + self.text.format(duplicate=self.duplicate, width=self.iWidth,
-                                                                   height=self.iHeight))
+            f"<style>{self.labelStyle}</style>"
+            + self.text.format(duplicate=self.duplicate, width=self.iWidth, height=self.iHeight)
+        )
 
 
 def extract(dupe_set, directory):
@@ -621,11 +683,11 @@ def extract(dupe_set, directory):
         dupe.extract(unique_dir(os.path.join(directory, os.path.basename(dupe.path))))
 
 
-def compare_dupe(dupe1: Dict[str, ImageMeta], dupe2: Dict[str, ImageMeta]):
+def compare_dupe(dupe1: dict[str, ImageMeta], dupe2: dict[str, ImageMeta]):
     for k, image1 in dupe1.items():
         score = sys.maxsize
         file_hash = ""
-        for k2, image2 in dupe2.items():
+        for _, image2 in dupe2.items():
             tmp = ImageHasher.hamming_distance(image1.image_hash, image2.image_hash)
             if tmp < score:
                 score = tmp
@@ -645,44 +707,49 @@ def unique_dir(file_name):
     while True:
         if not os.path.lexists(file_name):
             return file_name
-        file_name = file_name_parts[0] + ' (' + str(counter) + ')' + file_name_parts[1]
+        file_name = file_name_parts[0] + " (" + str(counter) + ")" + file_name_parts[1]
         counter += 1
 
 
-app = None
-settings = ComicTaggerSettings()
+def parse_args(args: list[str], config=True):
+    parser = argparse.ArgumentParser(description="ComicTagger Duplicate comparison script")
+    parser.add_argument(
+        "-w",
+        metavar="workdir",
+        type=str,
+        nargs=1,
+        default=tempfile.mkdtemp(),
+        help="work directory, will be deleted on close",
+    )
+    parser.add_argument("paths", metavar="PATH", type=str, nargs="+", help="Path(s) to search for duplicates")
+    if config:
+        parser.add_argument(
+            "--config",
+            help="""Config directory defaults to ~/.ComicTagger\non Linux/Mac and %%APPDATA%% on Windows\n""",
+        )
+    return parser.parse_args(args)
 
 
-def main():
-    signal.signal(signal.SIGINT, sigint_handler)
-
-    parser = argparse.ArgumentParser(description='ComicTagger Duplicate comparison script')
-    parser.add_argument('-w', metavar='workdir', type=str, nargs=1, default=tempfile.mkdtemp(), help='work directory')
-    parser.add_argument('paths', metavar='PATH', type=str, nargs='+', help='Path(s) to search for duplicates')
-    args = parser.parse_args()
+def main(args: Optional[list[str]] = None, settings: Optional[ComicTaggerSettings] = None):
+    opts = parse_args(args)
+    if not settings:
+        settings = ComicTaggerSettings(opts.config)
 
     style = MetaDataStyle.CIX
-    global app
-    workdir = args.w
-    app = QtWidgets.QApplication(sys.argv)
-    file_list = utils.get_recursive_filelist(args.paths)
+    file_list = utils.get_recursive_filelist(opts.paths)
 
-    timer = QtCore.QTimer()
-    timer.start(50)  # You may change this if you wish.
-    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
-
-    window = MainWindow(file_list, style, workdir)
-    window.show()
-    app.exec()
-    shutil.rmtree(workdir, True)
+    return MainWindow(file_list, style, opts.w, settings)
 
 
 def sigint_handler(*args):
     """Handler for the SIGINT signal."""
-    sys.stderr.write('\r')
+    sys.stderr.write("\r")
     QtWidgets.QApplication.quit()
 
 
-
 if __name__ == "__main__":
-    main()
+    signal.signal(signal.SIGINT, sigint_handler)
+    app = QtWidgets.QApplication([])
+    window = main()
+    window.show()
+    app.exec()

@@ -108,6 +108,34 @@ class FileSelectionList(QtWidgets.QWidget):
     def deselect_all(self) -> None:
         self.twList.setRangeSelected(QtWidgets.QTableWidgetSelectionRange(0, 0, self.twList.rowCount() - 1, 5), False)
 
+    def remove_paths(self, file_list: list[str]) -> None:
+        flist = file_list
+        current_removed = False
+        self.twList.setSortingEnabled(False)
+        for row in reversed(range(self.twList.rowCount())):
+            print(row)
+            ca = self.get_archive_by_row(row)
+            print(flist, str(ca.path.absolute()))
+            if ca and str(ca.path.absolute()) in flist:
+                flist.remove(str(ca.path.absolute()))
+                self.twList.removeRow(row)
+                if row == self.twList.currentRow():
+                    current_removed = True
+
+        self.twList.setSortingEnabled(True)
+
+        self.items_removed(current_removed)
+
+    def items_removed(self, current_removed: bool):
+        if self.twList.rowCount() > 0 and current_removed:
+            # since on a removal, we select row 0, make sure callback occurs if
+            # we're already there
+            if self.twList.currentRow() == 0:
+                self.current_item_changed_cb(self.twList.currentItem(), None)
+            self.twList.selectRow(0)
+        elif self.twList.rowCount() <= 0:
+            self.listCleared.emit()
+
     def remove_archive_list(self, ca_list: list[ComicArchive]) -> None:
         self.twList.setSortingEnabled(False)
         current_removed = False
@@ -120,15 +148,7 @@ class FileSelectionList(QtWidgets.QWidget):
                     self.twList.removeRow(row)
                     break
         self.twList.setSortingEnabled(True)
-
-        if self.twList.rowCount() > 0 and current_removed:
-            # since on a removal, we select row 0, make sure callback occurs if
-            # we're already there
-            if self.twList.currentRow() == 0:
-                self.current_item_changed_cb(self.twList.currentItem(), None)
-            self.twList.selectRow(0)
-        elif self.twList.rowCount() <= 0:
-            self.listCleared.emit()
+        self.items_removed(current_removed)
 
     def get_archive_by_row(self, row: int) -> Optional[ComicArchive]:
         if row >= 0:
@@ -166,14 +186,7 @@ class FileSelectionList(QtWidgets.QWidget):
         self.twList.setSortingEnabled(True)
         self.twList.currentItemChanged.connect(self.current_item_changed_cb)
 
-        if self.twList.rowCount() > 0:
-            # since on a removal, we select row 0, make sure callback occurs if
-            # we're already there
-            if self.twList.currentRow() == 0:
-                self.current_item_changed_cb(self.twList.currentItem(), None)
-            self.twList.selectRow(0)
-        else:
-            self.listCleared.emit()
+        self.items_removed(True)
 
     def add_path_list(self, pathlist: list[str]) -> None:
 
@@ -345,11 +358,11 @@ class FileSelectionList(QtWidgets.QWidget):
             fi.ca.read_cix()
             fi.ca.has_cbi()
 
-    def get_selected_archive_list(self) -> List[ComicArchive]:
+    def get_archive_list(self, all_comics=False) -> List[ComicArchive]:
         ca_list: List[ComicArchive] = []
         for r in range(self.twList.rowCount()):
             item = self.twList.item(r, FileSelectionList.dataColNum)
-            if item.isSelected():
+            if item.isSelected() or all_comics:
                 fi: FileInfo = item.data(QtCore.Qt.ItemDataRole.UserRole)
                 ca_list.append(fi.ca)
 

@@ -49,7 +49,6 @@ from comictaggerlib.fileselectionlist import FileInfo, FileSelectionList
 from comictaggerlib.issueidentifier import IssueIdentifier
 from comictaggerlib.logwindow import LogWindow
 from comictaggerlib.optionalmsgdialog import OptionalMessageDialog
-from comictaggerlib.options import Options
 from comictaggerlib.pagebrowser import PageBrowserWindow
 from comictaggerlib.pagelisteditor import PageListEditor
 from comictaggerlib.renamewindow import RenameWindow
@@ -76,12 +75,14 @@ class TaggerWindow(QtWidgets.QMainWindow):
         file_list: list[str],
         settings: ComicTaggerSettings,
         parent: Optional[QtWidgets.QWidget] = None,
-        opts: Optional[Options] = None,
+        opts = None,
     ) -> None:
         super().__init__(parent)
 
         uic.loadUi(ComicTaggerSettings.get_ui_file("taggerwindow.ui"), self)
         self.settings = settings
+
+        self.window_ref = {}
 
         # prevent multiple instances
         socket = QtNetwork.QLocalSocket(self)
@@ -148,10 +149,10 @@ class TaggerWindow(QtWidgets.QMainWindow):
 
         self.setWindowIcon(QtGui.QIcon(ComicTaggerSettings.get_graphic("app.png")))
         # TODO: this needs to be looked at
-        if opts is not None and opts.data_style is not None:
+        if opts is not None and opts.type is not None:
             # respect the command line option tag type
-            settings.last_selected_save_data_style = opts.data_style
-            settings.last_selected_load_data_style = opts.data_style
+            settings.last_selected_save_data_style = opts.type
+            settings.last_selected_load_data_style = opts.type
 
         self.save_data_style = settings.last_selected_save_data_style
         self.load_data_style = settings.last_selected_load_data_style
@@ -387,6 +388,8 @@ Have fun!
         self.actionPageBrowser.setStatusTip("Show the page browser")
         self.actionPageBrowser.triggered.connect(self.show_page_browser)
 
+        self.actionFind_Duplicate_Comics.triggered.connect(self.find_dupes)
+
         # Help Menu
         self.actionAbout.setStatusTip("Show the " + self.appName + " info")
         self.actionAbout.triggered.connect(self.about_app)
@@ -420,8 +423,20 @@ Have fun!
         self.toolBar.addAction(self.actionPageBrowser)
         self.toolBar.addAction(self.actionAutoImprint)
 
+    def find_dupes(self):
+        import comictaggerscripts.find_dupes
+        window = comictaggerscripts.find_dupes.main((str(x.path.absolute()) for x in self.fileSelectionList.get_archive_list(True)), self.settings)
+        window.closed.connect(self.finish_dupes)
+        window.show()
+        self.window_ref['comictaggerscripts.find_dupes'] = window
+
+    def finish_dupes(self, files: list[str]):
+        self.fileSelectionList.remove_paths(files)
+        if 'comictaggerscripts.find_dupes' in self.window_ref:
+            del self.window_ref['comictaggerscripts.find_dupes']
+
     def repackage_archive(self) -> None:
-        ca_list = self.fileSelectionList.get_selected_archive_list()
+        ca_list = self.fileSelectionList.get_archive_list()
         rar_count = 0
         for ca in ca_list:
             if ca.is_rar():
@@ -1485,7 +1500,7 @@ Please choose options below, and select OK.
 
     def remove_tags(self, style: int) -> None:
         # remove the indicated tags from the archive
-        ca_list = self.fileSelectionList.get_selected_archive_list()
+        ca_list = self.fileSelectionList.get_archive_list()
         has_md_count = 0
         for ca in ca_list:
             if ca.has_metadata(style):
@@ -1560,7 +1575,7 @@ Please choose options below, and select OK.
 
     def copy_tags(self) -> None:
         # copy the indicated tags in the archive
-        ca_list = self.fileSelectionList.get_selected_archive_list()
+        ca_list = self.fileSelectionList.get_archive_list()
         has_src_count = 0
 
         src_style = self.load_data_style
@@ -1787,7 +1802,7 @@ Please choose options below, and select OK.
         return success, match_results
 
     def auto_tag(self) -> None:
-        ca_list = self.fileSelectionList.get_selected_archive_list()
+        ca_list = self.fileSelectionList.get_archive_list()
         style = self.save_data_style
 
         if len(ca_list) == 0:
@@ -2011,7 +2026,7 @@ Please choose options below, and select OK to Auto-Tag.
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def rename_archive(self) -> None:
-        ca_list = self.fileSelectionList.get_selected_archive_list()
+        ca_list = self.fileSelectionList.get_archive_list()
 
         if len(ca_list) == 0:
             QtWidgets.QMessageBox.information(self, "Rename", "No archives selected!")
