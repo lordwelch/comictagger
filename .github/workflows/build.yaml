@@ -54,12 +54,6 @@ jobs:
           tool_name: isort
           filter_mode: nofilter
 
-      # - name: Check files using the black formatter
-      #   uses: reviewdog/action-black@v3.5.2
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     reporter: github-pr-review
-      #     filter_mode: nofilter
 
       - name: flake8 lint
         uses: reviewdog/action-flake8@v3
