@@ -21,11 +21,10 @@ import pathlib
 import re
 import unicodedata
 from collections import defaultdict
+from shutil import which  # noqa: F401
 from typing import Any, Mapping
 
 import pycountry
-from shutil import which  # noqa: F401
-import re
 
 logger = logging.getLogger(__name__)
 
