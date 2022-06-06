@@ -22,6 +22,7 @@ import re
 import unicodedata
 from collections import defaultdict
 from typing import Any, Mapping
+
 from shutil import which
 
 import pycountry
