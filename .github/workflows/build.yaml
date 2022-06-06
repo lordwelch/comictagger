@@ -44,23 +44,10 @@ jobs:
           done
         shell: bash
 
-      - name: isort lint
-        run: |
-          isort .
-      - name: Annotate isort diff changes using reviewdog
-        uses: reviewdog/action-suggester@v1
+      - uses: reviewdog/action-setup@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tool_name: isort
-          filter_mode: nofilter
-
-
-      - name: flake8 lint
-        uses: reviewdog/action-flake8@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          filter_mode: nofilter
-          reporter: github-pr-review
+          reviewdog_version: nightly
+      - run: flake8 | reviewdog -f=flake8 -reporter=github-pr-review
   build:
     runs-on: ${{ matrix.os }}
     strategy:
