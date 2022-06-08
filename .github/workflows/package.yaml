@@ -77,6 +77,5 @@ jobs:
           prerelease: "${{ contains(github.ref, '-') }}" # alpha-releases should be 1.3.0-alpha.x full releases should be 1.3.0
           draft: false
           files: |
-            dist/*.zip
+            dist/!(*Linux).zip
             dist/*.whl
-            !dist/*Linux.zip
